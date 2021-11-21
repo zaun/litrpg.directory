@@ -12,6 +12,8 @@ module.exports = exports = async (seriesName, kindleUrl) => {
   if (!kindleUrl) {
     return [];
   }
+
+  console.log(`  Fetching Kindle: ${kindleUrl}`);
   return util.fetch(kindleUrl).then((html) => {
     const dom = new JSDOM(html);
     const document = dom.window.document;

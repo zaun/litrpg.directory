@@ -1,7 +1,6 @@
 const { JSDOM } = require("jsdom");
 const util = require('./util');
 const _ = require('lodash');
-const { book } = require("./update");
 
 const GET_IMAGES = false;
 const BLACKLIST_AUDIBLE = [
@@ -13,6 +12,8 @@ module.exports = exports = async (seriesName, audibleUrl) => {
   if (!audibleUrl) {
     return [];
   }
+
+  console.log(`  Fetching Audible: ${audibleUrl}`);
   return util.fetch(audibleUrl).then((html) => {
     const dom = new JSDOM(html);
     const document = dom.window.document;

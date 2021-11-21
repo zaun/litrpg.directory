@@ -251,8 +251,10 @@ module.exports = exports = {
 
   addToQueue(data) {
     if (process.env.NODE_ENV === 'development') {
-      const updater = require('../lambdaUpdater');
-      updater.handler(data);
+      setTimeout(() => {
+        const updater = require('../lambdaUpdater');
+        updater.handler(data);
+      }, 250);
       return Promise.resolve();
     }
 
@@ -265,11 +267,17 @@ module.exports = exports = {
 
   cleanupName(name, seriesName) {
     const cleaned = name
+    .replace('\n', '')
     .replace(new RegExp(`${seriesName} [(]Book \\d+[)][:]`), '')
     .replace(new RegExp(`${seriesName} [(]book \\d+[)][:]`), '')
     .replace(new RegExp(`[(]${seriesName} Book \\d+[)]`), '')
     .replace(new RegExp(`${seriesName} [(]Book \\d+[)]`), '')
     .replace(new RegExp(`Book \\d+, `), '')
+    .replace(new RegExp(`[(]Vol\.\\d+[)]`), '')
+    .replace(new RegExp(`[(]Vol\. \\d+[)]`), '')
+    .replace(new RegExp(`[-] Vol\. \\d+`), '')
+    .replace(new RegExp(`[-] Vol\.\\d+`), '')
+    .replace(new RegExp(`[:] Volume \\d+`), '')
     .replace(new RegExp(`[,:] Book \\d+ of a Xianxia Cultivation Epic`), '')
     .replace(new RegExp(`[,:] Book \\d+ Of A Xianxia Cultivation Epic`), '')
     .replace(new RegExp(`[,:] Book \\d+ Of A Xianxia Cultivation Series`), '')
@@ -281,20 +289,24 @@ module.exports = exports = {
     .replace(': A Paranormal LitRPG Dungeon Core', '')
     .replace(': An Urban Fantasy Harem Adventure', '')
     .replace(': A LitRPG Dungeon Core Adventure', '')
+    .replace('(A LitRPG Dungeon Core Adventure)', '')
     .replace(': An Apocalyptic LitRPG Series', '')
     .replace(': A LitRPG and GameLit Series', '')
     .replace(': A LitRPG/GameLit Adventure', '')
+    .replace(': A LitRPG/Gamelit Adventure', '')
     .replace(': A Fantasy LitRPG Adventure', '')
     .replace(' (A Post-Apocalyptic LitRPG)', '')
     .replace(': A Xianxia Cultivation Epic', '')
     .replace(': A Post-Apocalyptic LitRPG', '')
     .replace(': A Dungeon Core Experience', '')
     .replace(': A Monster Girl Adventure', '')
+    .replace(': An Ether Collapse Series', '')
     .replace(': A Divine Dungeon Series', '')
     .replace(': A Dungeon Core Escapade', '')
     .replace(': LitRPG Progression Saga', '')
     .replace(': A Xianxia Fantasy Epic', '')
     .replace(': A LitRPG/GameLit Novel', '')
+    .replace(': A LitRPG/Gamelit Novel', '')
     .replace(': A Sci-fi LitRPG Story', '')
     .replace(': An Apocalyptic LitRPG', '')
     .replace(': A Dungeon Core Novel', '')
@@ -309,6 +321,9 @@ module.exports = exports = {
     .replace(': Book Three', '')
     .replace(': Book One', '')
     .replace(': Book Two', '')
+    .replace('Book Three :', '')
+    .replace('Book One :', '')
+    .replace('Book Two :', '')
     .replace(`The ${seriesName}: `, '')
     .replace(`${seriesName}: `, '')
     .replace(`The ${seriesName}, `, '')

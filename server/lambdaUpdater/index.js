@@ -4,17 +4,19 @@
  */
 
 const scanAudible = require('./scanAudible');
+const scanGoodreads = require('./scanGoodreads');
 const scanKindle = require('./scanKindle');
 const update = require('./update');
 const util = require('./util');
 const _ = require('lodash');
 const { getBookById } = require('./util');
+const { forEach } = require('lodash');
 
 exports.handler = (event, context, callback) => {
-  let series = event;
+  let lookup = event;
   if (_.isString(event)) {
     try {
-      series = JSON.parse(event);
+      lookup = JSON.parse(event);
     } catch (err) {
       console.log(`Error parsing JSON - ${err}`);
       console.log(event);
@@ -22,112 +24,146 @@ exports.handler = (event, context, callback) => {
     }
   }
   const startTime = new Date().getTime();
-  console.log(`Starting ${series.name}`);
+  console.log(`Starting ${lookup.name}`);
 
-  let audibleUrl = series.audibleUrl;
-  let kindleUrl = series.kindleUrl;
-  if (!audibleUrl) {
+  // create the series object that will
+  // be attached to each book.
+  const series = {
+    id: util.cyrb53(lookup.name.toLowerCase().trim()),
+    name: lookup.name,
+    urls: lookup.urls || [],
+  };
+
+  // Update the series URLs is event was new urls or
+  // get the lookp urls is the even was a series
+  if (lookup.audibleUrl) {
     const found = _.find(series.urls, { for: 'Audible' });
     if (found) {
-      audibleUrl = found.url;
+      found = lookup.audibleUrl;
+    } else {
+      series.urls.push({ for: 'Audible', url: lookup.audibleUrl });
+    }
+  } else {
+    const found = _.find(series.urls, { for: 'Audible' });
+    if (found) {
+      lookup.audibleUrl = found.url;
     }
   }
-  if (!kindleUrl) {
+
+  if (lookup.kindleUrl) {
     const found = _.find(series.urls, { for: 'Kindle' });
     if (found) {
-      kindleUrl = found.url;
+      found = lookup.kindleUrl;
+    } else {
+      series.urls.push({ for: 'Kindle', url: lookup.kindleUrl });
+    }
+  } else {
+    const found = _.find(series.urls, { for: 'Kindle' });
+    if (found) {
+      lookup.kindleUrl = found.url;
     }
   }
 
-  scanAudible(series.name, audibleUrl)
-  .then((audibleBooks) => {
-    return scanKindle(series.name, kindleUrl)
-      .then((kindleBooks) => ({ audibleBooks, kindleBooks }));
-  })
-  .then((data) => {
-    let books = data.audibleBooks;
-    let extras = [data.kindleBooks];
-    if (data.kindleBooks.length > data.audibleBooks.length) {
-      books = data.kindleBooks;
-      extras = [data.audibleBooks];
+  if (lookup.goodreadsUrl) {
+    const found = _.find(series.urls, { for: 'Goodreads' });
+    if (found) {
+      found = lookup.goodreadsUrl;
+    } else {
+      series.urls.push({ for: 'Goodreads', url: lookup.goodreadsUrl });
     }
+  } else {
+    const found = _.find(series.urls, { for: 'Goodreads' });
+    if (found) {
+      lookup.goodreadsUrl = found.url;
+    }
+  }
 
-    books.forEach((book) => {
-      book.series = {
-        id: util.cyrb53(series.name.toLowerCase().trim()),
-        name: series.name.trim(),
-        urls: series.urls || [],
-      };
+  // Lookup book information from the external sites
+  scanAudible(series.name, lookup.audibleUrl)
+  .then((audibleBooks) => ({
+    audibleBooks,
+    kindleBooks: [], // await scanKindle(series.name, lookup.kindleUrl),
+  }))
+  .then(async ({audibleBooks, kindleBooks}) => ({
+    audibleBooks,
+    kindleBooks,
+    goodreadBooks: await scanGoodreads(series.name, lookup.goodreadsUrl),
+  }))
+  .then((data) => {
+    const books = [];
+    const collections = [
+      data.audibleBooks,
+      data.kindleBooks,
+      data.goodreadBooks
+    ];
 
-      if (series.kindleUrl) {
-        book.series.urls.push({ for: 'Kindle', url: series.kindleUrl});
-      }
-      if (series.audibleUrl) {
-        book.series.urls.push({ for: 'Audible', url: series.audibleUrl});
-      }
-      if (series.goodreadsUrl) {
-        book.series.urls.push({ for: 'Goodreads', url: series.goodreadsUrl});
-      }
+    forEach(collections, (collection) => {
+      forEach(collection, (newBook) => {
+        // lookup the book from the final list
+        let masterBook = _.find(books, { id: newBook.id });
 
-      if (book.description && book.description.toUpperCase().indexOf('NO HAREM') !== -1) {
-        book.series.harem = 'N';
-      } else if (book.description && book.description.toUpperCase().indexOf('HAREM') !== -1) {
-        book.series.harem = 'Y';
-        book.series.young = 'N';
-      }
-
-      extras.forEach((extra) => {
-        const eb = _.find(extra, { id: book.id });
-        if (eb) {
-          book.imageAudioUrl = book.imageAudioUrl || eb.imageAudioUrl || '';
-          book.imageBookUrl = book.imageBookUrl || eb.imageBookUrl || '';
-          book.urls = _.flatten(_.uniq(_.concat(book.urls, eb.urls)));
-          book.ratings = _.flatten(_.uniq(_.concat(book.ratings, eb.ratings)));
-
-          if (eb.description && book.description
-              && eb.description.length > book.description.length) {
-            book.description = eb.description;
-          } else if (eb.description && !book.description) {
-            book.description = eb.description;
-          }
-
-          if (eb.description && eb.description.toUpperCase().indexOf('NO HAREM') !== -1) {
-            book.series.harem = 'N';
-          } else if (eb.description && eb.description.toUpperCase().indexOf('HAREM') !== -1) {
-            book.series.harem = 'Y';
-            book.series.young = 'N';
-          }
-
-          book.authors = book.authors || [];
-          book.authors.forEach((ba) => {
-            const ea = eb.authors.find((sa) => sa.id == ba.id);
-            if (ea) {
-              ba.urls = _.flatten(_.uniq(_.concat(ba.urls, ea.urls)));
-            }
-          });
-          eb.authors.forEach((ea) => {
-            const ba = book.authors.find((sa) => sa.id == ea.id);
-            if (!ba) {
-              book.authors.push(ea);
-            }
-          });
-
-          book.narrators = book.narrators || [];
-          book.narrators.forEach((bn) => {
-            const en = eb.narrators.find((sn) => sn.id == bn.id);
-            if (en) {
-              bn.urls = _.flatten(_.uniq(_.concat(bn.urls, en.urls)));
-            }
-          });
-          eb.narrators.forEach((en) => {
-            const bn = book.narrators.find((sn) => sn.id == en.id);
-            if (!bn) {
-              book.narrators.push(en);
-            }
-          });
-        } else {
-          console.log(book.title, _.map(extra, e => e.title));
+        // not found in the final list, add it
+        if (!masterBook) {
+          newBook.series = series;
+          books.push(newBook);
+          masterBook = newBook;
+          return;
         }
+
+        // found, update the master list with additional info
+
+        // merge urls, ratings and images
+        masterBook.urls = _.flatten(_.uniq(_.concat(masterBook.urls, newBook.urls)));
+        masterBook.ratings = _.flatten(_.uniq(_.concat(masterBook.ratings, newBook.ratings)));
+        masterBook.imageAudioUrl = masterBook.imageAudioUrl || newBook.imageAudioUrl || '';
+        masterBook.imageBookUrl = masterBook.imageBookUrl || newBook.imageBookUrl || '';
+
+        // Check if the books description says its harem or not
+        if (newBook.description && newBook.description.toUpperCase().indexOf('NO HAREM') !== -1) {
+          masterBook.series.harem = 'N';
+        } else if (newBook.description && newBook.description.toUpperCase().indexOf('HAREM') !== -1) {
+          masterBook.series.harem = 'Y';
+          masterBook.series.young = 'N';
+        }
+
+        // Keep the longer description
+        if (newBook.description && masterBook.description
+          && newBook.description.length > masterBook.description.length) {
+          masterBook.description = newBook.description;
+        } else if (newBook.description && !masterBook.description) {
+          masterBook.description = newBook.description;
+        }
+
+        // Update author list
+        masterBook.authors = masterBook.authors || [];
+        forEach(masterBook.authors, (ba) => {
+          const ea = newBook.authors.find((sa) => sa.id == ba.id);
+          if (ea) {
+            ba.urls = _.flatten(_.uniq(_.concat(ba.urls, ea.urls)));
+          }
+        });
+        forEach(newBook.authors, (ea) => {
+          const ba = masterBook.authors.find((sa) => sa.id == ea.id);
+          if (!ba) {
+            masterBook.authors.push(ea);
+          }
+        });
+
+        // Update narrator list
+        masterBook.narrators = masterBook.narrators || [];
+        forEach(masterBook.narrators, (ba) => {
+          const ea = newBook.narrators.find((sa) => sa.id == ba.id);
+          if (ea) {
+            ba.urls = _.flatten(_.uniq(_.concat(ba.urls, ea.urls)));
+          }
+        });
+        forEach(newBook.narrators, (ea) => {
+          const ba = masterBook.narrators.find((sa) => sa.id == ea.id);
+          if (!ba) {
+            masterBook.narrators.push(ea);
+          }
+        });
+        
       });
     });
 
@@ -135,7 +171,7 @@ exports.handler = (event, context, callback) => {
     return Promise.all(waitFor).then(() => books);
   })
   .then((books) => {
-    return util.getBooksBySeriesId(books[0].series.id)
+    return util.getBooksBySeriesId(series.id)
     .then((currentBooks) => {
       const deleteMe = [];
 
