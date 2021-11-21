@@ -1,0 +1,30 @@
+{
+  "name": "backend-server",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "build": "npm run build-lambdaSQSHandler; npm run build-lambdaAPI; npm run build-lambdaUpdater;",
+    "build-lambdaSQSHandler": "mkdir -p ../dist; rm -f ../dist/sqshandler.zip; cp -r ./lambdaSQSHandler ../dist; cd ../dist/lambdaSQSHandler; zip -r ../sqshandler.zip ./; cd ..; rm -rf lambdaSQSHandler",
+    "build-lambdaAPI": "mkdir -p ../dist; rm -f ../dist/api.zip; cp -r ./lambdaAPI ../dist; cp package.json ../dist/lambdaAPI; cd ../dist/lambdaAPI; npm install --production; zip -r ../api.zip ./; cd ..; rm -rf lambdaAPI",
+    "build-lambdaUpdater": "mkdir -p ../dist; rm -f ../dist/updater.zip; cp -r ./lambdaUpdater ../dist; cp package.json ../dist/lambdaUpdater; cd ../dist/lambdaUpdater; npm install --production; zip -r ../updater.zip ./; cd ..; rm -rf lambdaUpdater",
+    "serve": "rm -rf ./temp ; mkdir -p ./temp ; NODE_ENV=development UserPool=us-west-2_eBnYkrtNi PoolClient=u42sllobpaakqs5n8ell7omt5 nodemon --watch ./lambdaAPI --watch ./lambdaUpdater local"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "amazon-cognito-identity-js": "^5.2.3",
+    "jsdom": "^18.1.0",
+    "jsonwebtoken": "^8.5.0",
+    "lodash": "^4.17.5",
+    "path-match": "^1.2.4"
+  },
+  "devDependencies": {
+    "aws-sdk": "2.395.0",
+    "body-parser": "^1.18.2",
+    "dynamodb-local": "0.0.31",
+    "express": "^4.16.3",
+    "nodemon": "*",
+    "require-directory": "^2.1.1",
+    "s3rver": "2.2.8"
+  }
+}

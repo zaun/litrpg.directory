@@ -1,0 +1,583 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Website S3 Hosted, API Gateway Backend
+Parameters:
+  DomainName:
+    Type: String
+    Description: The DNS name of an Amazon Route 53 hosted zone e.g. server.com
+    AllowedPattern: '(?!-)[a-zA-Z0-9-.]{1,63}(?<!-)'
+    ConstraintDescription: must be a valid DNS zone name.
+    Default: litrpg.directory
+  SSLARN:
+    Type: String
+    Description: SSL Cert ARN from us-east-1
+    Default: arn:aws:acm:us-east-1:641191382262:certificate/8e8176f3-e41a-411b-bfac-683c63593b5d
+
+Mappings:
+  S3RegionMap:
+    us-east-1:
+      S3HostedZoneId: Z3AQBSTGFYJSTF
+      S3WebsiteEndpoint: s3-website-us-east-1.amazonaws.com
+    us-west-1:
+      S3HostedZoneId: Z2F56UZL2M1ACD
+      S3WebsiteEndpoint: s3-website-us-west-1.amazonaws.com
+    us-west-2:
+      S3HostedZoneId: Z3BJ6K6RIION7M
+      S3WebsiteEndpoint: s3-website-us-west-2.amazonaws.com
+    eu-west-1:
+      S3HostedZoneId: Z1BKCTXD74EZPE
+      S3WebsiteEndpoint: s3-website-eu-west-1.amazonaws.com
+    ap-southeast-1:
+      S3HostedZoneId: Z3O0J2DXBE1FTB
+      S3WebsiteEndpoint: s3-website-ap-southeast-1.amazonaws.com
+    ap-southeast-2:
+      S3HostedZoneId: Z1WCIGYICN2BYD
+      S3WebsiteEndpoint: s3-website-ap-southeast-2.amazonaws.com
+    ap-northeast-1:
+      S3HostedZoneId: Z2M4EHUR26P7ZW
+      S3WebsiteEndpoint: s3-website-ap-northeast-1.amazonaws.com
+    sa-east-1:
+      S3HostedZoneId: Z31GFT0UA1I2HV
+      S3WebsiteEndpoint: s3-website-sa-east-1.amazonaws.com
+
+Resources:
+  # Backend
+
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: '/'
+      Policies:
+      - PolicyName: execution
+        PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Resource: '*'
+          - Effect: Allow
+            Action:
+            - s3:GetObject
+            - s3:PutObject
+            - s3:ListBucket
+            Resource: '*'
+          - Effect: Allow
+            Action:
+            - dynamodb:BatchGet*
+            - dynamodb:Get*
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:Update*
+            - dynamodb:PutItem
+            - dynamodb:DeleteItem
+            Resource: '*'
+          - Effect: Allow
+            Action:
+            - cognito-idp:AdminGetUser
+            - cognito-idp:AdminUpdateUserAttributes
+            Resource: '*'
+          - Effect: Allow
+            Action:
+            - sqs:SendMessage
+            - sqs:ReceiveMessage
+            - sqs:DeleteMessage
+            - sqs:GetQueueAttributes
+            - sqs:ChangeMessageVisibility
+            Resource: '*'
+          - Effect: Allow
+            Action:
+            - lambda:InvokeFunction
+            Resource: '*'
+
+  QueueSeriesUpdate: 
+    Type: AWS::SQS::Queue
+    Properties:
+      VisibilityTimeout: 900
+
+  LambdaFunctionAPI:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        ZipFile: exports.handler = function (event, context, callback) { callback(null, event); };
+      Handler: index.handler
+      MemorySize: 1024
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Runtime: nodejs12.x
+      Timeout: 900
+      Environment:
+        Variables:
+          UpdateQueue: !Ref QueueSeriesUpdate
+          UserPool: !Ref UserPool
+          PoolClient: !Ref PoolClient
+
+  LambdaFunctionUpdater:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        ZipFile: exports.handler = function (event, context, callback) { callback(null, event); };
+      Handler: index.handler
+      MemorySize: 1024
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Runtime: nodejs12.x
+      Timeout: 900
+
+  LambdaFunctionQueueHandler:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        ZipFile: exports.handler = function (event, context, callback) { callback(null, event); };
+      Handler: index.handler
+      MemorySize: 1024
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Runtime: nodejs12.x
+      Timeout: 900
+      Environment:
+        Variables:
+          UpdateFunction: !Ref LambdaFunctionUpdater
+
+  UpdaterFunctionEventSourceMapping:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      BatchSize: 10
+      Enabled: true
+      EventSourceArn: !GetAtt QueueSeriesUpdate.Arn
+      FunctionName: !GetAtt LambdaFunctionQueueHandler.Arn
+
+  # Auth
+
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      AdminCreateUserConfig: 
+        AllowAdminCreateUserOnly: false
+      EmailConfiguration: 
+        ReplyToEmailAddress: 'nobody@notreal.com'
+      MfaConfiguration: 'OFF'
+      AutoVerifiedAttributes:
+        - email
+      Policies: 
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireLowercase: false
+          RequireNumbers: false
+          RequireSymbols: false
+          RequireUppercase: false
+      UsernameAttributes: 
+        - email
+      UserPoolName: !Ref DomainName
+ 
+  PoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: 'Website'
+      ExplicitAuthFlows: 
+        - 'USER_PASSWORD_AUTH'
+      GenerateSecret: false
+      UserPoolId: !Ref UserPool
+
+  AdminUserGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties: 
+      Description: 'Can access site admin screens'
+      GroupName: 'ADMIN'
+      UserPoolId: !Ref UserPool
+
+  ScanUserGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties: 
+      Description: 'Can manually start a full can'
+      GroupName: 'SCAN'
+      UserPoolId: !Ref UserPool
+
+  # Database
+
+  BooksTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: "Books"
+      BillingMode: "PAY_PER_REQUEST"
+      AttributeDefinitions:
+        - 
+          AttributeName: "id"
+          AttributeType: "S"
+        - 
+          AttributeName: "seriesId"
+          AttributeType: "S"
+        - 
+          AttributeName: "title"
+          AttributeType: "S"
+      KeySchema: 
+        - 
+          AttributeName: "id"
+          KeyType: "HASH"
+      GlobalSecondaryIndexes:
+        - 
+          IndexName: "series_index"
+          KeySchema: 
+            - 
+              AttributeName: "seriesId"
+              KeyType: "HASH"
+            - 
+              AttributeName: "title"
+              KeyType: "RANGE"
+          Projection: 
+            ProjectionType: "ALL"
+
+  SeriesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: "Series"
+      BillingMode: "PAY_PER_REQUEST"
+      AttributeDefinitions:
+        - 
+          AttributeName: "id"
+          AttributeType: "S"
+      KeySchema: 
+        - 
+          AttributeName: "id"
+          KeyType: "HASH"
+
+  PeopleTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: "People"
+      BillingMode: "PAY_PER_REQUEST"
+      AttributeDefinitions:
+        - 
+          AttributeName: "id"
+          AttributeType: "S"
+      KeySchema: 
+        - 
+          AttributeName: "id"
+          KeyType: "HASH"
+
+  BookPeopleTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: "BookPeople"
+      BillingMode: "PAY_PER_REQUEST"
+      AttributeDefinitions:
+        - 
+          AttributeName: "id"
+          AttributeType: "S"
+        - 
+          AttributeName: "bookId"
+          AttributeType: "S"
+        - 
+          AttributeName: "personId"
+          AttributeType: "S"
+      KeySchema: 
+        - 
+          AttributeName: "bookId"
+          KeyType: "HASH"
+        - 
+          AttributeName: "id"
+          KeyType: "RANGE"
+      GlobalSecondaryIndexes:
+        - 
+          IndexName: "person_index"
+          KeySchema: 
+            - 
+              AttributeName: "personId"
+              KeyType: "HASH"
+            - 
+              AttributeName: "bookId"
+              KeyType: "RANGE"
+          Projection: 
+            ProjectionType: "ALL"
+        - 
+          IndexName: "book_index"
+          KeySchema: 
+            - 
+              AttributeName: "bookId"
+              KeyType: "HASH"
+            - 
+              AttributeName: "personId"
+              KeyType: "RANGE"
+          Projection: 
+            ProjectionType: "ALL"
+
+  RequestsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: "Requests"
+      BillingMode: "PAY_PER_REQUEST"
+      AttributeDefinitions:
+        - 
+          AttributeName: "seriesId"
+          AttributeType: "S"
+        - 
+          AttributeName: "timestamp"
+          AttributeType: "N"
+      KeySchema: 
+        - 
+          AttributeName: "seriesId"
+          KeyType: "HASH"
+        - 
+          AttributeName: "timestamp"
+          KeyType: "RANGE"
+
+  # API Gateway
+  
+  APIGatewayExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: apigateway.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: '/'
+      Policies:
+      - PolicyName: execution
+        PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Resource: '*'
+          - Effect: Allow
+            Action:
+            - lambda:InvokeFunction
+            Resource: '*'
+
+  APIGateway:
+    Type: AWS::ApiGateway::RestApi
+    Properties:              
+      FailOnWarnings: true
+      Name: !Join ['-', !Split ['.', !Join ['.', ['api', !Ref DomainName]]]]
+      Body:
+        swagger: '2.0'
+        info:
+          version: 0.0.1
+          title: !Join [' ', ['API route for', !Ref DomainName]]
+        basePath: '/api'
+        paths:
+          '/{proxy+}':
+            options:
+              summary: CORS support
+              description: |
+                Enable CORS by returning correct headers
+              consumes:
+                - application/json
+              produces:
+                - application/json
+              tags:
+                - CORS
+              x-amazon-apigateway-integration:
+                type: mock
+                requestTemplates:
+                  application/json: |
+                    {
+                      "statusCode" : 200
+                    }
+                responses:
+                  "default":
+                    statusCode: "200"
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
+                      method.response.header.Access-Control-Allow-Methods: "'DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT'"
+                      method.response.header.Access-Control-Allow-Origin: "'*'"
+                    responseTemplates:
+                      application/json: |
+                        {}
+              responses:
+                '200':
+                  description: Default response for CORS method
+                  headers:
+                    Access-Control-Allow-Headers:
+                      type: "string"
+                    Access-Control-Allow-Methods:
+                      type: "string"
+                    Access-Control-Allow-Origin:
+                      type: "string"
+            x-amazon-apigateway-any-method:
+              produces:
+              - "application/json"
+              responses:
+                '200':
+                  description: "200 response"
+                  schema:
+                    $ref: "#/definitions/Empty"
+              x-swagger-router-controller: main
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: POST
+                uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaFunctionAPI.Arn}/invocations'
+                credentials: !GetAtt APIGatewayExecutionRole.Arn
+        definitions:
+          Empty:
+            type: "object"
+            title: "Empty Schema"
+
+  APIDeployment:
+    Type: AWS::ApiGateway::Deployment
+    Properties:
+      RestApiId: !Ref APIGateway
+      Description: Deploy for live
+      StageName: Live
+
+  APIDomain:
+    Type: 'AWS::ApiGateway::DomainName'
+    Properties:
+      DomainName: !Join ['.', ['api', !Ref DomainName]]
+      CertificateArn: !Ref SSLARN
+
+  APIMapping:
+    Type: 'AWS::ApiGateway::BasePathMapping'
+    DependsOn:
+    - APIDeployment
+    Properties:
+      DomainName: !Ref APIDomain
+      RestApiId: !Ref APIGateway
+      Stage: Live
+
+  # Website
+  
+  WebsiteBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName:
+        Ref: DomainName
+      AccessControl: PublicRead
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: 404.html
+      Tags:
+      - Key: Name
+        Value: !Join ['_', ['WebsiteBucket', !Ref 'AWS::StackName']]
+      - Key: Domain
+        Value: !Ref DomainName
+    DeletionPolicy: Retain
+
+  WWWBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Join ['.', ['www', !Ref DomainName]]
+      AccessControl: PublicRead
+      WebsiteConfiguration:
+        RedirectAllRequestsTo:
+          HostName: !Ref WebsiteBucket
+      Tags:
+      - Key: Name
+        Value: !Join ['_', ['WWWBucket', !Ref 'AWS::StackName']]
+      - Key: Domain
+        Value: !Ref DomainName
+
+  WebsiteBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref WebsiteBucket
+      PolicyDocument:
+        Statement:
+        - Action:
+          - s3:GetObject
+          Effect: Allow
+          Resource: !Join ['', ['arn:aws:s3:::', !Ref WebsiteBucket, '/*']]
+          Principal: '*'
+  
+  WWWBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref WWWBucket
+      PolicyDocument:
+        Statement:
+        - Action:
+          - s3:GetObject
+          Effect: Allow
+          Resource: !Join ['', ['arn:aws:s3:::', !Ref WWWBucket, '/*']]
+          Principal: '*'
+
+  WebsiteCloudfront:
+    Type: AWS::CloudFront::Distribution
+    DependsOn:
+    - WebsiteBucket
+    Properties:
+      DistributionConfig:
+        Comment: !Ref DomainName
+        Origins:
+        - DomainName: !Select [2, !Split ["/", !GetAtt WebsiteBucket.WebsiteURL]]
+          Id: S3Origin
+          CustomOriginConfig:
+            HTTPPort: '80'
+            HTTPSPort: '443'
+            OriginProtocolPolicy: http-only
+        Enabled: true
+        HttpVersion: 'http2'
+        DefaultRootObject: index.html
+        Aliases:
+        - !Ref DomainName
+        - !Join ['.', ['www', !Ref DomainName]]
+        DefaultCacheBehavior:
+          DefaultTTL: 60
+          MaxTTL: 60
+          MinTTL: 60
+          AllowedMethods:
+          - GET
+          - HEAD
+          Compress: true
+          TargetOriginId: S3Origin
+          ForwardedValues:
+            QueryString: true
+            Cookies:
+              Forward: none
+          ViewerProtocolPolicy: redirect-to-https
+        PriceClass: PriceClass_All
+        ViewerCertificate:
+          AcmCertificateArn: !Ref SSLARN
+          SslSupportMethod: sni-only
+        CustomErrorResponses:
+          - ErrorCode: 404
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+
+  DNSRecords:
+    Type: AWS::Route53::RecordSetGroup
+    Properties:
+      HostedZoneName:
+        Fn::Join: ['', [!Ref DomainName, '.']]
+      Comment: Zone records.
+      RecordSets:
+      - Name: !Ref DomainName
+        Type: A
+        AliasTarget:
+          HostedZoneId: Z2FDTNDATAQYW2
+          DNSName: !GetAtt [WebsiteCloudfront, DomainName]
+      - Name: !Join ['.', ['www', !Ref DomainName]]
+        Type: A
+        AliasTarget:
+          HostedZoneId: Z2FDTNDATAQYW2
+          DNSName: !GetAtt [WebsiteCloudfront, DomainName]
+      - Name: !Join ['.', ['api', !Ref DomainName]]
+        Type: A
+        AliasTarget:
+          HostedZoneId: Z2FDTNDATAQYW2
+          DNSName: !GetAtt [APIDomain, DistributionDomainName]
+
+Outputs:
+  WebsiteURL:
+    Value: !Join ['.', ['http://www', !Ref DomainName]]
+    Description: Website URL
+  APIURL:
+    Value: !Join ['.', ['api', !Ref DomainName]]
+    Description: Website URL
+  S3URL:
+    Value: !GetAtt WebsiteBucket.WebsiteURL
+    Description: URL for website hosted on S3
+  CognitoUserPool:
+    Value: !Ref UserPool
+  CognitoPoolClient:
+    Value: !Ref PoolClient
