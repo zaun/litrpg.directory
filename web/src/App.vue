@@ -71,6 +71,9 @@ body {
 * {
   position: relative;
 }
+*:focus {
+  box-shadow: none !important;
+}
 .banner-image {
   position: absolute;
   width: 100%;
