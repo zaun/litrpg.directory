@@ -65,12 +65,8 @@ module.exports = exports = async (seriesName, goodreadsUrl) => {
         goodreadsRatingReviews = parseInt(ratingParts[2].replace(/,/g, ''));
       }
 
-      if (bookNumber.indexOf('-') === -1 && bookNumberParts.length <= 2) {
-        let bookNumberParsed = parseFloat(bookNumber);
-        if (_.isNaN(bookNumberParsed)) {
-          bookNumberParsed = 0;
-          console.log(`G - Cant parse book number ${bookNumber} for ${title}`);
-        }
+      const bookNumberParsed = parseFloat(bookNumber);
+      if (!_.isNaN(bookNumberParsed) && bookNumber.indexOf('-') === -1 && bookNumberParts.length <= 2) {
         const bookData = {
           id: util.cyrb53(`${bookNumberParsed} ${title}`),
           bookNumber: bookNumberParsed,

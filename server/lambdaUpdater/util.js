@@ -277,6 +277,7 @@ module.exports = exports = {
     .replace(new RegExp(`[(]${seriesName} Book \\d+[)]`), '')
     .replace(new RegExp(`${seriesName} [(]Book \\d+[)]`), '')
     .replace(new RegExp(`${seriesName} Book \\d+[:]`), '')
+    .replace(new RegExp(`The ${seriesName} \\d+[:]`), '')
     .replace(new RegExp(`Book \\d+, `), '')
     .replace(new RegExp(`Book \\d+: `), '')
     .replace(new RegExp(`[(]Vol\.\\d+[)]`), '')

@@ -100,7 +100,7 @@ exports.handler = (event, context, callback) => {
     forEach(collections, (collection) => {
       forEach(collection, (newBook) => {
         // lookup the book from the final list
-        let masterBook = _.find(books, { id: newBook.id });
+        let masterBook = _.find(books, { bookNumber: newBook.bookNumber });
 
         // not found in the final list, add it
         if (!masterBook) {
@@ -108,6 +108,12 @@ exports.handler = (event, context, callback) => {
           books.push(newBook);
           masterBook = newBook;
           return;
+        }
+
+        // Keep the largest tite
+        if (masterBook.title.length < newBook.title.length) {
+          masterBook.title = newBook.title;
+          masterBook.id = newBook.id;
         }
 
         // found, update the master list with additional info
