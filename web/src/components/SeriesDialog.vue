@@ -1,4 +1,30 @@
 <template lang="pug">
+p-overlaypanel(ref="ratingOverlay", :style="{width: '400px'}")
+  p-datatable.p-datatable-sm(
+    :value='selectedBook.ratings',
+  )
+    p-column(
+      field='from', header="Site"
+      style="flex: 0 0 150px;"
+    )
+    p-column(
+      field='stars', header="Stars"
+      style="flex: 1 0 250px;"
+    )
+      template(#body="props")
+        p-rating.text-xs(
+          :modelValue="props.data.stars", :stars="5" :disabled="true",
+          :cancel="false", style="display: inline-block;",
+        )
+        span.text-xs.ml-1 {{ props.data.stars.toFixed(1).toLocaleString() }}
+    p-column(
+      field='reviews', header="Reviews", :sortable="false",
+      style="flex: 0 0 120px;"
+    )
+      template(#body="props")
+        .text-xs(style="text-align: right; width: 100%; padding-right: 10px")
+          | {{ props.data.reviews.toLocaleString() }}
+
 p-dialog(
   :visible="true",
   modal,
@@ -115,7 +141,7 @@ p-dialog(
                       v-else-if="link.for == 'Goodreads'"
                     ).button-image(src="@/assets/goodreads.png")
                     img(v-else).button-image(src="@/assets/audible.png")
-              .grid
+              .grid(@mouseover="showRatingTip($event, props.data)" @mouseleave="hideRatingTip")
                 .col
                   p-rating(
                     style="display: inline-block;",
@@ -185,6 +211,7 @@ export default {
     const store = inject('store');
     const toast = useToast();
 
+    const ratingOverlay = ref(null);
     const editMode = ref(false);
     const saving = ref(false);
     const editForm = ref({
@@ -195,6 +222,7 @@ export default {
       harem: '',
       completed: '',
     });
+    const selectedBook = ref({});
 
     const displayBool = (val) => {
       if (!val) {
@@ -313,10 +341,21 @@ export default {
       emit('close');
     };
 
+    const showRatingTip = (event, book) => {
+      selectedBook.value = book;
+      ratingOverlay.value.show(event);
+    };
+
+    const hideRatingTip = (event) => {
+      ratingOverlay.value.hide(event);
+    };
+
     return {
+      ratingOverlay,
       editMode,
       saving,
       editForm,
+      selectedBook,
       displayBool,
       displaySetting,
       displayPlot,
@@ -324,6 +363,8 @@ export default {
       showEditMode,
       sendUpdate,
       close,
+      showRatingTip,
+      hideRatingTip,
       settingOptions: store.state.settingOptions,
       plotOptions: store.state.plotOptions,
       eraOptions: store.state.eraOptions,
