@@ -1,6 +1,6 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
 
-import BookTable from '@/views/BookList.vue';
+import SeriesList from '@/views/SeriesList.vue';
 import Admin from '@/views/Admin.vue';
 import AdminLogin from '@/views/AdminLogin.vue';
 
@@ -8,7 +8,7 @@ export default (app) => {
   const routes = [{
     name: 'home',
     path: '/',
-    component: BookTable,
+    component: SeriesList,
   }, {
     name: 'admin',
     path: '/admin',

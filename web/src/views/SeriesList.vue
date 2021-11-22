@@ -5,17 +5,17 @@
       Header
   .grid.m-0.book-list
     .col.p-0.text-left(style="width: 100%; height: 100%;")
-      BookTable
+      SeriesTable
 </template>
 
 <script>
-import BookTable from '@/components/BookTable.vue';
+import SeriesTable from '@/components/SeriesTable.vue';
 import Header from '@/components/Header.vue';
 
 export default {
   name: 'App',
   components: {
-    BookTable,
+    SeriesTable,
     Header,
   },
   setup() {
