@@ -350,6 +350,10 @@ export default {
       ratingOverlay.value.hide(event);
     };
 
+    const goto = (url) => {
+      window.open(url, '_blank');
+    };
+
     return {
       ratingOverlay,
       editMode,
@@ -365,6 +369,7 @@ export default {
       close,
       showRatingTip,
       hideRatingTip,
+      goto,
       settingOptions: store.state.settingOptions,
       plotOptions: store.state.plotOptions,
       eraOptions: store.state.eraOptions,
