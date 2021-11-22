@@ -218,13 +218,17 @@ module.exports = exports = {
     }).promise();
   },
 
-  fetch(url) {
+  fetch(url, cookies, referer) {
+    const cookieData = cookies ? cookies.join('; ') : '';
     return new Promise((resolve, reject) => {
       https.get(url, {
         headers: {
+          'Accept': 'text/html',
           'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36',
           'Accept-Encoding': 'identity',
-          'referer': 'https://google.com/',
+          'Cache-Control': 'max-age=0',
+          'Cookie': cookieData,
+          Referer: referer || 'https://litrpg.directory/',
         },
       }, (resp) => {
         let data = new Stream();
@@ -239,7 +243,7 @@ module.exports = exports = {
     
         // The whole response has been received. Print out the result.
         resp.on('end', () => {
-          resolve(data.read().toString('utf8'), resp.headers["content-type"]);
+          resolve({ html: data.read().toString('utf8'), cookies: resp.headers["set-cookie"].map((c) => c.split(';').shift()) });
         });
     
       }).on("error", (err) => {

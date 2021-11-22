@@ -14,7 +14,7 @@ module.exports = exports = async (seriesName, kindleUrl) => {
   }
 
   console.log(`  Fetching Kindle: ${kindleUrl}`);
-  return util.fetch(kindleUrl).then((html) => {
+  return util.fetch(kindleUrl).then(({ html }) => {
     const dom = new JSDOM(html);
     const document = dom.window.document;
     
@@ -122,7 +122,7 @@ module.exports = exports = async (seriesName, kindleUrl) => {
   .then((books) => {
     const waitFor = [];
     books.forEach((book) => {
-      waitFor.push(util.fetch(book.urls[0].url).then((html) => {
+      waitFor.push(util.fetch(book.urls[0].url).then(({ html }) => {
         const dom = new JSDOM(html);
         const document = dom.window.document;
 

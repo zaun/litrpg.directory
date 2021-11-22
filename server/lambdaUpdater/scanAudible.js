@@ -14,7 +14,7 @@ module.exports = exports = async (seriesName, audibleUrl) => {
   }
 
   console.log(`  Fetching Audible: ${audibleUrl}`);
-  return util.fetch(audibleUrl).then((html) => {
+  return util.fetch(audibleUrl).then(({ html }) => {
     const dom = new JSDOM(html);
     const document = dom.window.document;
 
@@ -145,7 +145,7 @@ module.exports = exports = async (seriesName, audibleUrl) => {
     const waitFor = [];
     books.forEach((book) => {
       if(book.urls.length > 0) {
-        waitFor.push(util.fetch(book.urls[0].url).then((html) => {
+        waitFor.push(util.fetch(book.urls[0].url).then(({ html }) => {
           const dom = new JSDOM(html);
           const document = dom.window.document;
 

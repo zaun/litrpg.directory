@@ -12,7 +12,7 @@ module.exports = exports = async (seriesName, goodreadsUrl) => {
   }
 
   console.log(`  Fetching Goodreads: ${goodreadsUrl}`);
-  return util.fetch(goodreadsUrl).then((html) => {
+  return util.fetch(goodreadsUrl).then(({ html, cookies }) => {
     const dom = new JSDOM(html);
     const document = dom.window.document;
 
@@ -20,7 +20,8 @@ module.exports = exports = async (seriesName, goodreadsUrl) => {
 
     const elsBooks = document.querySelectorAll('.listWithDividers__item');
     elsBooks.forEach((elBook) => {
-      const bookNumber = elBook.querySelector('.gr-h3').textContent.trim().split(' ').pop();
+      const bookNumberParts = elBook.querySelector('.gr-h3').textContent.trim().split(' ');
+      const bookNumber = bookNumberParts[bookNumberParts.length - 1];
       const details = elBook.querySelector('.responsiveBook .u-paddingBottomXSmall');
       const title = util.cleanupName(details.querySelector('.gr-h3').textContent.trim(), seriesName);
 
@@ -64,7 +65,7 @@ module.exports = exports = async (seriesName, goodreadsUrl) => {
         goodreadsRatingReviews = parseInt(ratingParts[2].replace(/,/g, ''));
       }
 
-      if (bookNumber.indexOf('-') === -1) {
+      if (bookNumber.indexOf('-') === -1 && bookNumberParts.length <= 2) {
         let bookNumberParsed = parseFloat(bookNumber);
         if (_.isNaN(bookNumberParsed)) {
           bookNumberParsed = 0;
@@ -87,13 +88,13 @@ module.exports = exports = async (seriesName, goodreadsUrl) => {
         books.push(bookData);
       }
     });
-    return books;
+    return { books, cookies };
   })
-  .then((books) => {
+  .then(({ books, cookies }) => {
     const waitFor = [];
     books.forEach((book) => {
       if(book.urls.length > 0) {
-        waitFor.push(util.fetch(book.urls[0].url).then((html) => {
+        waitFor.push(util.fetch(book.urls[0].url, cookies, goodreadsUrl).then(({ html }) => {
           const dom = new JSDOM(html);
           const document = dom.window.document;
 
@@ -105,10 +106,13 @@ module.exports = exports = async (seriesName, goodreadsUrl) => {
             }
           }
 
-          const elDesc = document.querySelector('#description > span:nth-child(2)');
+          let elDesc = document.querySelector('#description > span:nth-child(2)');
+          if (elDesc === null) {
+            elDesc = document.querySelector('.BookPageMetadataSection__description .Formatted');
+          }
           let lines = [];
           if (elDesc) {
-            lines = elDesc.innerHTML.split('<br>');
+            lines = elDesc.textContent.split('  ');
           }
           let content = '';
           for (var i = 0; i < lines.length; i++) {
