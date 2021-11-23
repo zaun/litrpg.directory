@@ -71,7 +71,7 @@ module.exports = exports = async (seriesName, audibleUrl) => {
         }
         narratorHrefParts.pop();
         const audibleUrl = audibleId ? `https://www.audible.com${narratorHrefParts.join('/')}/${audibleId}` : '';
-        const name = elNarrator.textContent.trim();
+        const name = elNarrator.textContent.replace('Soundbooth Theater', '').trim();
 
         if(name.toLowerCase().indexOf('translat') === -1) {
           narrators.push({
