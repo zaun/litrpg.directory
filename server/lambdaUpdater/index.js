@@ -102,6 +102,11 @@ exports.handler = (event, context, callback) => {
         // lookup the book from the final list
         let masterBook = _.find(books, { bookNumber: newBook.bookNumber });
 
+        // If not by book number, try by title
+        if (!masterBook) {
+          masterBook = _.find(books, { title: newBook.title });
+        }
+
         // not found in the final list, add it
         if (!masterBook) {
           newBook.series = series;
