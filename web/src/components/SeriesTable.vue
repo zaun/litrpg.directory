@@ -172,6 +172,12 @@ p-datatable.p-datatable-sm(
       span
         | {{ new Date(props.data.lastUpdate).toLocaleDateString() }}
         | {{ new Date(props.data.lastUpdate).toLocaleTimeString([], { timeStyle: 'short' }) }}
+  template(#footer)
+    .grid.p-0.m-0
+      .col.text-sm
+      .col.text-center.p-0.m-0
+        p-button.p-button-secondary.p-button-sm(@click="addSeries") Add Missing Series
+      .col.text-sm
 
   p-card.noItemsFound(v-if="!loading && noSearch" style="width: 100%; height: 100%;")
     template(#content)
@@ -343,6 +349,9 @@ export default {
       return [];
     });
 
+    const addSeries = () => {
+    };
+
     return {
       loading,
       series: computed(filteredSeries, []),
@@ -360,6 +369,7 @@ export default {
       hideInfoTip,
       tipData,
       goto,
+      addSeries,
       infoOverlay,
       ratingOverlay,
       settingOptions: store.state.settingOptions,
@@ -405,7 +415,7 @@ export default {
   z-index: 5 !important;
 }
 .p-datatable-thead th.p-frozen-column {
-  border-right: 1px solid rgba(233, 236, 239, 0.8) !important;
+  background-color: rgba(248, 249, 250, 0.95) !important;
 }
 .p-datatable-tbody td.p-frozen-column {
   border-right: 1px solid #e9ecef !important;
@@ -415,7 +425,7 @@ export default {
   z-index: 2;
 }
 .p-datatable-tbody td {
-  background-color: rgba(250, 250, 250, 0.85) !important;
+  background-color: transparent !important;
 }
 .p-datatable .p-datatable-tbody > tr {
   background: inherit !important;
@@ -442,8 +452,13 @@ export default {
 .p-dialog-content .p-dataview-grid, .p-dataview-content {
   min-width: 100%;
 }
+.p-datatable-footer {
+  padding: 0px !important;
+  border: 0px !important;
+  background-color: rgba(248, 249, 250, 0.75) !important;
+}
 .p-datatable-wrapper {
-  min-height: 100%;
-  background-color: rgba(248, 249, 250, 0.05) !important;
+  min-height: calc(100% - 33px);
+  background-color: rgba(248, 249, 250, 0.75) !important;
 }
 </style>

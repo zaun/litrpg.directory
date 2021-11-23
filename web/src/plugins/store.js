@@ -162,8 +162,8 @@ const store = (axios, api) => ({
             return b;
           }), 'seriesNumber'),
           reviews,
-          rating: rating.toFixed(1),
-          stars: Math.round(rating.toFixed(1)),
+          rating: reviews === 0 ? 0 : rating.toFixed(1),
+          stars: reviews === 0 ? 0 : Math.round(rating.toFixed(1)),
           publishedCount: books.length,
         };
       }),
