@@ -132,6 +132,8 @@ exports.handler = (event, context, callback) => {
         // Check if the books description says its harem or not
         if (newBook.description && newBook.description.toUpperCase().indexOf('NO HAREM') !== -1) {
           masterBook.series.harem = 'N';
+        } else if (newBook.description && newBook.description.toUpperCase().indexOf('NOT INCLUDE HAREM') !== -1) {
+          masterBook.series.harem = 'N';
         } else if (newBook.description && newBook.description.toUpperCase().indexOf('HAREM') !== -1) {
           masterBook.series.harem = 'Y';
           masterBook.series.young = 'N';
