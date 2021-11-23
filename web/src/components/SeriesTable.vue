@@ -56,13 +56,14 @@ SeriesDialog(
 )
 
 p-datatable.p-datatable-sm(
+  v-if="!loading && !noSearch"
   :value='series',
   :scrollable="true",
   scrollDirection="both"
-  scrollHeight="100%",
-  style="height: 100%;",
+  scrollHeight="flex",
   sortField="title",
   :sortOrder="1",
+  :scrollRows='series.length',
  )
   p-column(
     field='title', header="Series Name", :sortable="true", :frozen="true",
@@ -174,21 +175,21 @@ p-datatable.p-datatable-sm(
         | {{ new Date(props.data.lastUpdate).toLocaleTimeString([], { timeStyle: 'short' }) }}
   template(#footer)
     .grid.p-0.m-0
-      .col.text-sm
+      .col.text-xs Vue: {{ VUE_VERSION }} &middot; PrimeVUE: {{ PRIMEVUE_VERSION }}
       .col.text-center.p-0.m-0
         p-button.p-button-secondary.p-button-sm(@click="addSeries") Add Missing Series
       .col.text-sm
 
-  p-card.noItemsFound(v-if="!loading && noSearch" style="width: 100%; height: 100%;")
-    template(#content)
-      .text-center.mt-5.pt-5
-        i.pi.pi-book(style="font-size: 6em")
-      .text-5xl.text-center.mt-5.pt-5 No Books Found
-  p-card.noItemsFound(v-if="loading" style="width: 100%; height: 100%;")
-    template(#content)
-      .text-center.mt-5.pt-5
-        i.pi.pi-spin.pi-spinner(style="font-size: 6em")
-      .text-5xl.text-center.mt-5.pt-5 Loading...
+p-card.noItemsFound(v-if="!loading && noSearch" style="width: 100%; height: 100%;")
+  template(#content)
+    .text-center.mt-5.pt-5
+      i.pi.pi-book(style="font-size: 6em")
+    .text-5xl.text-center.mt-5.pt-5 No Books Found
+p-card.noItemsFound(v-if="loading" style="width: 100%; height: 100%;")
+  template(#content)
+    .text-center.mt-5.pt-5
+      i.pi.pi-spin.pi-spinner(style="font-size: 6em")
+    .text-5xl.text-center.mt-5.pt-5 Loading...
 </template>
 
 <script>
@@ -213,6 +214,8 @@ export default {
   },
   setup() {
     const store = inject('store');
+    const PRIMEVUE_VERSION = inject('PRIMEVUE_VERSION') || 'Unknow';
+    const VUE_VERSION = inject('VUE_VERSION') || 'Unknow';
 
     const infoOverlay = ref(null);
     const infoTipMode = ref('setting');
@@ -353,6 +356,8 @@ export default {
     };
 
     return {
+      VUE_VERSION,
+      PRIMEVUE_VERSION,
       loading,
       series: computed(filteredSeries, []),
       noSearch,
