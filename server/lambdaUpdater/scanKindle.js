@@ -44,7 +44,7 @@ module.exports = exports = async (seriesName, kindleUrl) => {
         }
   
         const originalName = elAuthor.textContent.replace(/,/g, '').trim();
-        let name = originalName;
+        let name = util.cleanupName(originalName);
         if (name.indexOf(' (') !== -1) {
           const authorParts = elAuthor.textContent.replace(/,/g, '').trim().split(' ');
           authorParts.pop();

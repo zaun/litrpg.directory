@@ -361,7 +361,22 @@ module.exports = exports = {
     .replace(`: ${seriesName}`, '')
     .replace(`: The ${seriesName}`, '')
     .trim();
-    return cleaned;
+
+    // Normilize names or just retuen the cleaned up version
+    switch(cleaned.toLowerCase()) {
+      case 'aaaron crash':
+        return 'Aaron Crash';
+      case 'james hunter':
+        return 'James A. Hunter';
+      case 'eric martin':
+        return 'Eric Jason Martin';
+      case 'jeffrey "falcon" logue':
+        return 'Jeffrey Logue';
+      case 'michael g. manning':
+        return 'Michael Manning';
+      default:
+        return cleaned;
+    }
   },
 
   cyrb53(inp, seed = 0) {

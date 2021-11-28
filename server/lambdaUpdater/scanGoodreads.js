@@ -42,7 +42,7 @@ module.exports = exports = async (seriesName, goodreadsUrl) => {
         let authorId = authorHrefParts.pop();
         authorId = authorId.split('.').shift();
         const authorUrl = authorId ? `https://www.goodreads.com/author/show/${authorId}` : '';
-        const name = elAuthor.textContent.trim();
+        const name = util.cleanupName(elAuthor.textContent.trim());
 
         if(!BLACKLIST_GOODREADS.includes(authorId) && name.toLowerCase().indexOf('translat') === -1) {
           authors.push({

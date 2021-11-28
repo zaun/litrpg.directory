@@ -46,7 +46,7 @@ module.exports = exports = async (seriesName, audibleUrl) => {
         }
         authorHrefParts.pop();
         const authorUrl = authorId ? `https://www.audible.com${authorHrefParts.join('/')}/${authorId}` : '';
-        const name = elAuthor.textContent.trim();
+        const name = util.cleanupName(elAuthor.textContent.trim());
 
         if(!BLACKLIST_AUDIBLE.includes(authorId) && name.toLowerCase().indexOf('translat') === -1) {
           authors.push({
@@ -71,7 +71,7 @@ module.exports = exports = async (seriesName, audibleUrl) => {
         }
         narratorHrefParts.pop();
         const audibleUrl = audibleId ? `https://www.audible.com${narratorHrefParts.join('/')}/${audibleId}` : '';
-        const name = elNarrator.textContent.replace('Soundbooth Theater', '').trim();
+        const name = util.cleanupName(elNarrator.textContent.replace('Soundbooth Theater', '').trim());
 
         if(name.toLowerCase().indexOf('translat') === -1) {
           narrators.push({
