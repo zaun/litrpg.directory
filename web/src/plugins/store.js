@@ -238,7 +238,7 @@ const store = (axios, api) => ({
 
   removeRequest(data) {
     const options = { headers: { Authorization: `Bearer ${this.state.token}` } };
-    return axios.delete(`${this.api}/requests/${data.series.id}:${data.timestamp}`, null, options)
+    return axios.delete(`${this.api}/requests/${data.series.id}:${data.timestamp}`, options)
       .then(() => {
         remove(this.state.requests, data);
       });

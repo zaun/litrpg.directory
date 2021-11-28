@@ -1,5 +1,4 @@
 import PrimeVue from 'primevue/config';
-import 'primeicons/primeicons.css';
 
 import Button from 'primevue/button';
 import Card from 'primevue/card';
@@ -24,6 +23,9 @@ import Toolbar from 'primevue/toolbar';
 
 import ToastService from 'primevue/toastservice';
 
+import 'primevue/resources/primevue.min.css';
+import 'primevue/resources/themes/saga-blue/theme.css';
+import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
 
 export default (app) => {

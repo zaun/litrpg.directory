@@ -1,7 +1,7 @@
 <template lang="pug">
 .p-2(style="height: 100%;")
   p-toolbar.p-0.mb-1
-    template(#left)
+    template(#start)
       p-selectbutton.mx-1(
         :options="views",
         v-model="selectedView",
@@ -69,7 +69,7 @@
       .col
 
   .m-0(v-if="selectedView == 'R'", style="height: calc(100% - 36px - 0.25rem)")
-    .flex-grow-1.p-0.text-left(style="height: 100%")
+    .flex-grow-1.p-0.text-left(v-if=`requests.length !== 0` style="height: 100%")
       p-datatable.p-datatable-sm(
         :value='requests',
         :scrollable="true",
@@ -78,7 +78,6 @@
         style="height: 100%;",
         sortField="title",
         :sortOrder="1",
-        :loading=`requests.length === 0`,
       )
         p-column(
           field='series.name', header="Series Name", :sortable="true",
@@ -115,6 +114,16 @@
           template(#body="props")
             p-button(@click="acceptRequest(props.data)" icon="pi pi-check")
             p-button.ml-1(@click="removeRequest(props.data)" icon="pi pi-trash")
+    .flex-grow-1.p-0.text-left(v-else style="height: 100%")
+      .grid
+        .col
+        .col.text-center
+          p-panel.mt-4
+            template(#header) Book Update Request
+            p.text-left
+              | No requests found.
+            p-button(@click="loadRequests", :disabled="busy") Refresh
+        .col
 </template>
 
 <script>
@@ -129,19 +138,74 @@ export default {
     const store = inject('store');
     const toast = useToast();
 
-    const views = ref([
+    const busy = ref(false);
+
+    const views = [
       { name: 'Requests', code: 'R' },
       { name: 'Add Series', code: 'A' },
       { name: 'Scan', code: 'S' },
-    ]);
+    ];
     const selectedView = ref('R');
+
+    // Requests
+
+    const requests = computed(() => store.state.requests);
+
+    const loadRequests = () => {
+      store.updateRequests().then((err) => {
+        if (err) {
+          console.log(err);
+        }
+      });
+    };
+    loadRequests();
+
+    const acceptRequest = (data) => {
+      busy.value = true;
+      store.acceptRequest(data).then(() => {
+        busy.value = false;
+        toast.add({
+          severity: 'success',
+          summary: 'Request had been applied',
+          life: 1000,
+        });
+      }).catch(() => {
+        busy.value = false;
+        toast.add({
+          severity: 'error',
+          summary: 'Request not applied',
+          life: 1000,
+        });
+      });
+    };
+
+    const removeRequest = (data) => {
+      busy.value = true;
+      store.removeRequest(data).then(() => {
+        busy.value = false;
+        toast.add({
+          severity: 'success',
+          summary: 'Request had been deleted',
+          life: 1000,
+        });
+      }).catch(() => {
+        busy.value = false;
+        toast.add({
+          severity: 'error',
+          summary: 'Request not deleted',
+          life: 1000,
+        });
+      });
+    };
+
+    // Add Series
+
     const newForm = ref({
-      series: 'A Thousand Li',
-      amazonUrl: 'https://www.amazon.com/dp/B07VXJFRFV',
-      audibleUrl: 'https://www.audible.com/series/B07S39HTT7',
+      series: '',
+      amazonUrl: '',
+      audibleUrl: '',
       goodreadsUrl: '',
     });
-    const busy = ref(false);
 
     const isAddValid = computed(() => !newForm.value.series
       || (!newForm.value.amazonUrl && !newForm.value.audibleUrl
@@ -156,6 +220,31 @@ export default {
         day: 'numeric',
       },
     );
+
+    const addSeries = () => {
+      busy.value = true;
+      store.addSeries(
+        newForm.value.series,
+        newForm.value.amazonUrl,
+        newForm.value.audibleUrl,
+        newForm.value.goodreadsUrl,
+      ).then(() => {
+        busy.value = false;
+        newForm.value.series = '';
+        newForm.value.amazonUrl = '';
+        newForm.value.audibleUrl = '';
+        newForm.value.goodreadsUrl = '';
+        toast.add({
+          severity: 'success',
+          summary: 'Added new series',
+          life: 5000,
+        });
+      }).catch(() => {
+        busy.value = false;
+      });
+    };
+
+    // Scan
 
     const startScan = () => {
       busy.value = true;
@@ -174,54 +263,6 @@ export default {
       });
     };
 
-    const addSeries = () => {
-      busy.value = true;
-      store.addSeries(
-        newForm.value.series,
-        newForm.value.amazonUrl,
-        newForm.value.audibleUrl,
-        newForm.value.goodreadsUrl,
-      ).then(() => {
-        busy.value = false;
-        // newForm.value.series = '';
-        // newForm.value.amazonUrl = '.';
-        // newForm.value.audibleUrl = '';
-        // newForm.value.goodreadsUrl = '.';
-        toast.add({
-          severity: 'success',
-          summary: 'Added new series',
-          life: 5000,
-        });
-      }).catch(() => {
-        busy.value = false;
-      });
-    };
-
-    store.updateRequests().then((err) => {
-      if (err) {
-        console.log(err);
-      }
-    });
-    const requests = computed(() => store.state.requests);
-
-    const acceptRequest = (data) => {
-      busy.value = true;
-      store.acceptRequest(data).then(() => {
-        busy.value = false;
-      }).catch(() => {
-        busy.value = false;
-      });
-    };
-
-    const removeRequest = (data) => {
-      busy.value = true;
-      store.removeRequest(data).then(() => {
-        busy.value = false;
-      }).catch(() => {
-        busy.value = false;
-      });
-    };
-
     return {
       views,
       selectedView,
@@ -234,6 +275,7 @@ export default {
       acceptRequest,
       removeRequest,
       requests,
+      loadRequests,
     };
   },
 };

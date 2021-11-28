@@ -78,14 +78,14 @@ p-datatable.p-datatable-sm(
   )
     template(#body="props")
       .person-list
-        .person(v-for="person in props.data.authors") {{ person.name }}
+        .person(v-for="(person, index) in props.data.authors" :key="index") {{ person.name }}
   p-column(
     field='narrators', header="Narrators",
     style="flex: 0 0 200px;"
   )
     template(#body="props")
       .person-list
-        .person(v-for="person in props.data.narrators") {{ person.name }}
+        .person(v-for="(person, index) in props.data.narrators" :key="index") {{ person.name }}
   p-column(
     field='setting', header="Setting", :sortable="true",
     style="flex: 0 0 160px;"
