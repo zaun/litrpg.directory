@@ -368,6 +368,8 @@ module.exports = exports = {
         return 'Aaron Crash';
       case 'james hunter':
         return 'James A. Hunter';
+      case 'jason cheek':
+        return 'Jason A. Cheek';
       case 'eric martin':
         return 'Eric Jason Martin';
       case 'jeffrey "falcon" logue':
