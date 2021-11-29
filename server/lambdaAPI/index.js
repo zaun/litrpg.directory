@@ -170,17 +170,33 @@ exports.handler = (event, context, callback) => {
       case '/REQUESTS':
         if (route.method === 'POST') {
           const b = route.bodyJson;
-          util.putRequest({
-            seriesId: b.seriesId,
-            timestamp: new Date().getTime(),
-            field: b.field,
-            oldValue: b.oldValue,
-            newValue: b.newValue,
-          }).then(() => {
-            done(201, 'OK');
-          }).catch(err => {
-            done(500, err);
-          });
+          if (b.seriesId) {
+            util.putRequest({
+              seriesId: b.seriesId,
+              timestamp: new Date().getTime(),
+              field: b.field,
+              oldValue: b.oldValue,
+              newValue: b.newValue,
+            }).then(() => {
+              done(201, 'OK');
+            }).catch(err => {
+              done(500, err);
+            });
+          } else if (b.seriesName) {
+            util.putRequestSeries({
+              timestamp: new Date().getTime(),
+              seriesName: b.seriesName,
+              kindleUrl: b.kindleUrl,
+              audibleUrl: b.audibleUrl,
+              goodreadsUrl: b.goodreadsUrl,
+            }).then(() => {
+              done(201, 'OK');
+            }).catch(err => {
+              done(500, err);
+            });
+          } else {
+            done(400, 'Invalid missing seriesId or series');
+          }
         } else if (route.method === 'GET') {
           if (!route.auth || !_.includes(route.auth.groups, 'ADMIN')) {
             done(401, `Not Authorized [${route.auth.groups}]`);
@@ -203,8 +219,10 @@ exports.handler = (event, context, callback) => {
               return items;
             });
           })
-          .then((items) => {
-            done(200, items);
+          .then((updateRequests) => {
+            return util.getAll('NewSeries').then((newSeries) => {
+              done(200, { updateRequests, newSeries })
+            });
           }).catch(err => {
             done(500, err);
           });
