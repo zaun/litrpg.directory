@@ -338,7 +338,7 @@ Resources:
       KeySchema: 
         - 
           AttributeName: "timestamp"
-          KeyType: "RANGE"
+          KeyType: "HASH"
 
   # API Gateway
   
