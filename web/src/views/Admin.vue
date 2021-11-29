@@ -153,6 +153,7 @@ export default {
   },
   setup() {
     const store = inject('store');
+    const api = inject('api');
     const toast = useToast();
 
     const busy = ref(false);
@@ -241,7 +242,7 @@ export default {
 
     const addSeries = () => {
       busy.value = true;
-      store.addSeries(
+      api.postSeries(
         newForm.value.series,
         newForm.value.amazonUrl,
         newForm.value.audibleUrl,
@@ -266,7 +267,7 @@ export default {
 
     const startScan = () => {
       busy.value = true;
-      store.startScan().then(() => {
+      api.startScan().then(() => {
         // this happens fast. Prevent dbl-clicks.
         setTimeout(() => {
           busy.value = false;

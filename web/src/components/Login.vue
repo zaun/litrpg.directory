@@ -59,11 +59,11 @@ export default {
     });
 
     const login = () => {
-      store.authenticate({
-        username: loginForm.value.username,
-        password: loginForm.value.password,
-        newPassword: loginForm.value.newPassword,
-      }).then((code) => {
+      store.authenticate(
+        loginForm.value.username,
+        loginForm.value.password,
+        loginForm.value.newPassword,
+      ).then((code) => {
         showError.value = false;
         newPassword.value = false;
         switch (code) {

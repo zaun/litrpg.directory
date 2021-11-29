@@ -198,6 +198,7 @@ export default {
   },
   setup(props, { emit }) {
     const store = inject('store');
+    const api = inject('api');
     const toast = useToast();
 
     const ratingOverlay = ref(null);
@@ -262,7 +263,7 @@ export default {
       const updates = [];
       if (editForm.value.setting !== props.selectedSeries.setting
         && !(editForm.value.setting === '' && isUndefined(props.selectedSeries.setting))) {
-        updates.push(store.sendRequest(
+        updates.push(api.postRequest(
           props.selectedSeries.id,
           'setting',
           props.selectedSeries.setting,
@@ -271,7 +272,7 @@ export default {
       }
       if (editForm.value.plot !== props.selectedSeries.plot
         && !(editForm.value.plot === '' && isUndefined(props.selectedSeries.plot))) {
-        updates.push(store.sendRequest(
+        updates.push(api.postRequest(
           props.selectedSeries.id,
           'plot',
           props.selectedSeries.plot,
@@ -280,7 +281,7 @@ export default {
       }
       if (editForm.value.era !== props.selectedSeries.era
         && !(editForm.value.era === '' && isUndefined(props.selectedSeries.era))) {
-        updates.push(store.sendRequest(
+        updates.push(api.postRequest(
           props.selectedSeries.id,
           'era',
           props.selectedSeries.era,
@@ -289,7 +290,7 @@ export default {
       }
       if (editForm.value.harem !== props.selectedSeries.harem
         && !(editForm.value.harem === '' && isUndefined(props.selectedSeries.harem))) {
-        updates.push(store.sendRequest(
+        updates.push(api.postRequest(
           props.selectedSeries.id,
           'harem',
           props.selectedSeries.harem,
@@ -298,7 +299,7 @@ export default {
       }
       if (editForm.value.completed !== props.selectedSeries.completed
         && !(editForm.value.completed === '' && isUndefined(props.selectedSeries.completed))) {
-        updates.push(store.sendRequest(
+        updates.push(api.postRequest(
           props.selectedSeries.id,
           'completed',
           props.selectedSeries.completed,
@@ -307,7 +308,7 @@ export default {
       }
       if (editForm.value.young !== props.selectedSeries.young
         && !(editForm.value.young === '' && isUndefined(props.selectedSeries.young))) {
-        updates.push(store.sendRequest(
+        updates.push(api.postRequest(
           props.selectedSeries.id,
           'young',
           props.selectedSeries.young,

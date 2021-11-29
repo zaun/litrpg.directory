@@ -47,7 +47,7 @@ p-dialog.add-new-dialog(
       .col.text-right
         p-button.mt-2(
           @click="sendUpdate"
-          :disabled="saving"
+          :disabled="busy"
         ) Send Request
 </template>
 
@@ -63,7 +63,7 @@ export default {
   name: 'NewSeriesDialog',
   components: { },
   setup(props, { emit }) {
-    const store = inject('store');
+    const api = inject('api');
     const toast = useToast();
 
     const busy = ref(false);
@@ -86,7 +86,7 @@ export default {
       if (newForm.value.goodreadsUrl) {
         urls.push(newForm.value.goodreadsUrl);
       }
-      store.sendRequestSeries(
+      api.postRequestSeries(
         newForm.value.series,
         urls,
       ).then(() => {

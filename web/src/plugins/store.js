@@ -11,7 +11,7 @@ import _, {
   sortBy,
 } from 'lodash';
 
-const store = (axios, api) => ({
+const store = (api) => ({
   debug: false,
   api,
 
@@ -33,7 +33,6 @@ const store = (axios, api) => ({
     newSeries: [],
 
     authenticated: false,
-    token: '',
     groups: [],
 
     plotOptions: [
@@ -173,40 +172,18 @@ const store = (axios, api) => ({
   },
 
   updateBooks() {
-    return axios.get(`${this.api}/books`)
-      .then((response) => {
-        this.state.books = response.data;
-        this.state.series = this.makeSeriesList();
-        this.state.loading = true;
-      }).then(() => false).catch(() => true);
-  },
-
-  sendRequest(seriesId, field, oldValue, newValue) {
-    const data = {
-      seriesId,
-      field,
-      oldValue: oldValue || '',
-      newValue,
-    };
-    return axios.post(`${this.api}/requests`, data);
-  },
-
-  sendRequestSeries(seriesName, urls) {
-    const data = {
-      seriesName,
-      urls: urls || [],
-    };
-    return axios.post(`${this.api}/requests`, data);
+    return api.getBooks().then((books) => {
+      this.state.books = books;
+      this.state.series = this.makeSeriesList();
+      this.state.loading = true;
+    }).then(() => false).catch(() => true);
   },
 
   updateRequests() {
-    const options = { headers: { Authorization: `Bearer ${this.state.token}` } };
-    return axios.get(`${this.api}/requests`, options)
-      .then((response) => {
-        console.log(response.data);
-        this.state.requests = response.data.updateRequests;
-        this.state.newSeries = response.data.newSeries;
-      }).then(() => false).catch(() => true);
+    return api.getRequests().then((requests) => {
+      this.state.requests = requests.updateRequests;
+      this.state.newSeries = requests.newSeries;
+    }).then(() => false).catch(() => true);
   },
 
   setSearch(val) {
@@ -224,61 +201,39 @@ const store = (axios, api) => ({
     this.state.searchCompleted = val.completed;
   },
 
-  addSeries(name, kindleUrl, audibleUrl, goodreadsUrl) {
-    const options = { headers: { Authorization: `Bearer ${this.state.token}` } };
-    const data = {
-      name,
-      kindleUrl,
-      audibleUrl,
-      goodreadsUrl,
-    };
-    return axios.post(`${this.api}/series`, data, options);
-  },
-
   acceptRequest(data) {
-    const options = { headers: { Authorization: `Bearer ${this.state.token}` } };
     const request = cloneDeep(data);
     const seriesId = data.series.id;
     delete request.series;
-    return axios.put(`${this.api}/series/${seriesId}`, request, options)
-      .then(() => {
-        remove(this.state.requests, data);
-      });
+    return api.acceptRequest(seriesId, request).then(() => {
+      remove(this.state.requests, data);
+    });
   },
 
   removeRequest(data) {
-    const options = { headers: { Authorization: `Bearer ${this.state.token}` } };
-    return axios.delete(`${this.api}/requests/${data.series.id}:${data.timestamp}`, options)
-      .then(() => {
-        remove(this.state.requests, data);
-      });
+    return api.removeRequest(data.series.id, data.timestamp).then(() => {
+      remove(this.state.requests, data);
+    });
   },
 
-  startScan() {
-    const options = { headers: { Authorization: `Bearer ${this.state.token}` } };
-    return axios.post(`${this.api}/scan`, null, options);
-  },
-
-  authenticate(data) {
-    return axios.post(`${this.api}/auth`, data)
-      .then((request) => {
+  authenticate(username, password, newPassword) {
+    return api.authenticate({ username, password, newPassword }).then((auth) => {
+      if (auth.code === 'Authenticated') {
         this.state.authenticated = true;
-        this.state.token = request.data.token;
-        this.state.groups = request.data.groups;
-        console.log(request.data);
-        return 'Authenticated';
-      })
-      .catch((err) => {
+        api.setToken(auth.data.token);
+        this.state.groups = auth.data.groups;
+      } else {
         this.state.authenticated = false;
-        this.state.token = '';
+        api.setToken('');
         this.state.groups = [];
-        return err.response.data.code;
-      });
+      }
+      return auth.code;
+    });
   },
 });
 
 export default (app) => {
   const config = app.config.globalProperties;
-  config.store = store(config.axios, config.$API);
+  config.store = store(config.api);
   app.provide('store', config.store);
 };
