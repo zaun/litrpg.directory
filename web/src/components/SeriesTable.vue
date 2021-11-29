@@ -181,10 +181,11 @@ p-datatable.p-datatable-sm(
         | {{ new Date(props.data.lastUpdate).toLocaleTimeString([], { timeStyle: 'short' }) }}
   template(#footer)
     .grid.p-0.m-0
-      //- .col.text-xs Vue: {{ VUE_VERSION }} &middot; PrimeVUE: {{ PRIMEVUE_VERSION }}
-      .col.text-center.p-0.m-0
+      .col-1.text-xs
+        i.pi.pi-spin.pi-spinner(v-if="init")
+      .col-10.text-center.p-0.m-0
         p-button.p-button-secondary.p-button-sm(@click="addSeries") Add Missing Series
-      //- .col.text-sm
+      .col-1.text-sm
 
 p-card.noItemsFound(v-if="!loading && noSearch" style="width: 100%; height: 100%;")
   template(#content)
@@ -203,6 +204,7 @@ import {
   computed,
   inject,
   ref,
+  watch,
 } from 'vue';
 
 import {
@@ -232,14 +234,25 @@ export default {
     const showInfo = ref(false);
     const selectedSeries = ref({});
 
+    const init = ref(true);
     const loading = ref(true);
     const error = ref(false);
+
+    watch(
+      () => store.state.series,
+      () => {
+        if (store.state.series.length > 0 && init.value) {
+          loading.value = false;
+        }
+      },
+    );
 
     store.updateBooks().then((err) => {
       if (err) {
         error.value = true;
       }
       loading.value = false;
+      init.value = false;
     });
 
     const filteredSeries = () => filter(store.state.series, (s) => {
@@ -368,6 +381,7 @@ export default {
     return {
       VUE_VERSION,
       PRIMEVUE_VERSION,
+      init,
       loading,
       series: computed(filteredSeries, []),
       noSearch,

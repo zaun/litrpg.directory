@@ -1,4 +1,5 @@
-import { reactive } from 'vue';
+import { reactive, nextTick } from 'vue';
+import { get as idbGet, set as idbSet } from 'idb-keyval';
 import _, {
   cloneDeep,
   flatten,
@@ -91,6 +92,10 @@ const store = (api) => ({
   }),
 
   makeSeriesList() {
+    if (this.state.books.length === 0) {
+      return [];
+    }
+
     const grouped = groupBy(this.state.books, 'series.name');
     const series = keys(grouped);
     return sortBy(
@@ -171,11 +176,32 @@ const store = (api) => ({
     );
   },
 
-  updateBooks() {
-    return api.getBooks().then((books) => {
+  setBooks(books, init) {
+    if ((this.state.books.length === 0 && init) || !init) {
       this.state.books = books;
-      this.state.series = this.makeSeriesList();
+      if (!init) {
+        this.setSeries(this.makeSeriesList());
+      }
+    }
+  },
+
+  setSeries(series, init) {
+    this.state.series = series;
+    if (!init) {
+      console.log('Saving series list');
+      idbSet('SeriesList', cloneDeep(series));
+    }
+  },
+
+  updateBooks() {
+    if (this.state.books.length === 0) {
       this.state.loading = true;
+    }
+    return api.getBooks().then((books) => {
+      console.log('Saving book list');
+      idbSet('BookList', cloneDeep(books));
+      this.setBooks(books);
+      this.state.loading = false;
     }).then(() => false).catch(() => true);
   },
 
@@ -235,5 +261,23 @@ const store = (api) => ({
 export default (app) => {
   const config = app.config.globalProperties;
   config.store = store(config.api);
+
+  idbGet('BookList').then((data) => {
+    nextTick(() => {
+      if (data && data.length > 0) {
+        console.log('Loading book list');
+        config.store.setBooks(data, true);
+      }
+    });
+  });
+  idbGet('SeriesList').then((data) => {
+    nextTick(() => {
+      if (data && data.length > 0) {
+        console.log('Loading series list');
+        config.store.setSeries(data, true);
+      }
+    });
+  });
+
   app.provide('store', config.store);
 };
