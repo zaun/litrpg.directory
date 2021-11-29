@@ -67,6 +67,23 @@
                 :disabled="isAddValid || busy",
               ) Add
       .col
+    .grid
+      .col
+      .col
+        p-datatable.p-datatable-sm(
+          :value='newSeries',
+          :scrollable="true",
+          scrollDirection="both",
+          scrollHeight="100%",
+          style="height: 100%;",
+          sortField="title",
+          :sortOrder="1",
+        )
+          p-column(
+            field='seriesName', header="New Series Name", :sortable="true",
+            style="flex-grow: 1; flex-basis: 290px;"
+          )
+      .col
 
   .m-0(v-if="selectedView == 'R'", style="height: calc(100% - 36px - 0.25rem)")
     .flex-grow-1.p-0.text-left(v-if=`requests.length !== 0` style="height: 100%")
@@ -206,6 +223,7 @@ export default {
       audibleUrl: '',
       goodreadsUrl: '',
     });
+    const newSeries = computed(() => store.state.newSeries);
 
     const isAddValid = computed(() => !newForm.value.series
       || (!newForm.value.amazonUrl && !newForm.value.audibleUrl
@@ -275,6 +293,7 @@ export default {
       acceptRequest,
       removeRequest,
       requests,
+      newSeries,
       loadRequests,
     };
   },

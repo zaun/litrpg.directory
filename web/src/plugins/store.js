@@ -30,6 +30,7 @@ const store = (axios, api) => ({
     searchCompleted: '',
 
     requests: [],
+    newSeries: [],
 
     authenticated: false,
     token: '',
@@ -190,12 +191,21 @@ const store = (axios, api) => ({
     return axios.post(`${this.api}/requests`, data);
   },
 
+  sendRequestSeries(seriesName, urls) {
+    const data = {
+      seriesName,
+      urls: urls || [],
+    };
+    return axios.post(`${this.api}/requests`, data);
+  },
+
   updateRequests() {
     const options = { headers: { Authorization: `Bearer ${this.state.token}` } };
     return axios.get(`${this.api}/requests`, options)
       .then((response) => {
-        this.state.requests = response.data;
-        console.log(this.state.requests);
+        console.log(response.data);
+        this.state.requests = response.data.updateRequests;
+        this.state.newSeries = response.data.newSeries;
       }).then(() => false).catch(() => true);
   },
 

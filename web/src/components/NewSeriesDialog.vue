@@ -76,8 +76,19 @@ export default {
 
     const sendUpdate = () => {
       busy.value = true;
-      store.sendRequest(
-        newForm.value,
+      const urls = [];
+      if (newForm.value.kindleUrl) {
+        urls.push(newForm.value.kindleUrl);
+      }
+      if (newForm.value.audibleUrl) {
+        urls.push(newForm.value.audibleUrl);
+      }
+      if (newForm.value.goodreadsUrl) {
+        urls.push(newForm.value.goodreadsUrl);
+      }
+      store.sendRequestSeries(
+        newForm.value.series,
+        urls,
       ).then(() => {
         busy.value = false;
         emit('close');
