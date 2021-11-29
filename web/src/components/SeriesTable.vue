@@ -64,12 +64,14 @@ NewSeriesDialog(
 p-datatable.p-datatable-sm(
   v-if="!loading && !noSearch"
   :value='series',
+  dataKey="id",
   :scrollable="true",
+  responsiveLayout="scroll",
   scrollDirection="both"
   scrollHeight="flex",
   sortField="title",
   :sortOrder="1",
-  :scrollRows='series.length',
+  showGridlines,
  )
   p-column(
     field='title', header="Series Name", :sortable="true", :frozen="true",
