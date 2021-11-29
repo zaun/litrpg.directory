@@ -47,12 +47,13 @@ p-dialog.add-new-dialog(
       .col.text-right
         p-button.mt-2(
           @click="sendUpdate"
-          :disabled="busy"
+          :disabled="!isValid || busy"
         ) Send Request
 </template>
 
 <script>
 import {
+  computed,
   inject,
   ref,
 } from 'vue';
@@ -72,6 +73,18 @@ export default {
       kindleUrl: '',
       audibleUrl: '',
       goodreadsUrl: '',
+    });
+
+    const isValid = computed(() => {
+      if (!newForm.value.series) {
+        return false;
+      }
+      if (!newForm.value.kindleUrl
+        && !newForm.value.audibleUrl
+        && !newForm.value.goodreadsUrl) {
+        return false;
+      }
+      return true;
     });
 
     const sendUpdate = () => {
@@ -107,6 +120,7 @@ export default {
 
     return {
       busy,
+      isValid,
       newForm,
       sendUpdate,
       close,

@@ -322,7 +322,7 @@ export default {
           severity: 'success',
           summary: 'Update Request Sent',
           detail: `Update to series ${props.selectedSeries.title} has been sent for review.`,
-          life: 5000,
+          life: 2000,
         });
       });
     };
