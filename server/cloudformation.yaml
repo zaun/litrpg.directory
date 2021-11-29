@@ -326,6 +326,20 @@ Resources:
           AttributeName: "timestamp"
           KeyType: "RANGE"
 
+  NewSeriesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: "NewSeries"
+      BillingMode: "PAY_PER_REQUEST"
+      AttributeDefinitions:
+        - 
+          AttributeName: "timestamp"
+          AttributeType: "N"
+      KeySchema: 
+        - 
+          AttributeName: "timestamp"
+          KeyType: "RANGE"
+
   # API Gateway
   
   APIGatewayExecutionRole:
