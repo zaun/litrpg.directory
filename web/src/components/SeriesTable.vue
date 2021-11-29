@@ -15,6 +15,7 @@ p-overlaypanel(ref="infoOverlay", :style="{width: '400px'}")
 p-overlaypanel(ref="ratingOverlay")
   p-datatable.p-datatable-sm(
     :value='selectedSeries.books',
+    dataKey='id',
   )
     p-column(
       field='title', header="Book Name", :sortable="false", :frozen="false",
@@ -53,6 +54,11 @@ SeriesDialog(
   v-if="showInfo",
   :selectedSeries="selectedSeries",
   @close="showInfo = false"
+)
+
+NewSeriesDialog(
+  v-if="showAddNew",
+  @close="showAddNew = false"
 )
 
 p-datatable.p-datatable-sm(
@@ -175,10 +181,10 @@ p-datatable.p-datatable-sm(
         | {{ new Date(props.data.lastUpdate).toLocaleTimeString([], { timeStyle: 'short' }) }}
   template(#footer)
     .grid.p-0.m-0
-      .col.text-xs Vue: {{ VUE_VERSION }} &middot; PrimeVUE: {{ PRIMEVUE_VERSION }}
+      //- .col.text-xs Vue: {{ VUE_VERSION }} &middot; PrimeVUE: {{ PRIMEVUE_VERSION }}
       .col.text-center.p-0.m-0
         p-button.p-button-secondary.p-button-sm(@click="addSeries") Add Missing Series
-      .col.text-sm
+      //- .col.text-sm
 
 p-card.noItemsFound(v-if="!loading && noSearch" style="width: 100%; height: 100%;")
   template(#content)
@@ -206,11 +212,13 @@ import {
 } from 'lodash';
 
 import SeriesDialog from '@/components/SeriesDialog.vue';
+import NewSeriesDialog from '@/components/NewSeriesDialog.vue';
 
 export default {
   name: 'SeriesTable',
   components: {
     SeriesDialog,
+    NewSeriesDialog,
   },
   setup() {
     const store = inject('store');
@@ -220,6 +228,7 @@ export default {
     const infoOverlay = ref(null);
     const infoTipMode = ref('setting');
     const ratingOverlay = ref(null);
+    const showAddNew = ref(false);
     const showInfo = ref(false);
     const selectedSeries = ref({});
 
@@ -353,6 +362,7 @@ export default {
     });
 
     const addSeries = () => {
+      showAddNew.value = true;
     };
 
     return {
@@ -361,6 +371,7 @@ export default {
       loading,
       series: computed(filteredSeries, []),
       noSearch,
+      showAddNew,
       showInfo,
       selectedSeries,
       displayBool,
@@ -435,6 +446,9 @@ export default {
 .p-datatable .p-datatable-tbody > tr {
   background: inherit !important;
 }
+.p-datatable .p-datatable-tbody > tr:hover {
+  background: rgba(248, 249, 250, 0.05) !important;
+}
 .p-datatable-loading-overlay {
   background-color: rgba(248, 249, 250, 0.95) !important;
 }
@@ -458,12 +472,12 @@ export default {
   min-width: 100%;
 }
 .p-datatable-footer {
-  padding: 0px !important;
+  padding: 0px 0px 1px 1px !important;
   border: 0px !important;
   background-color: rgba(248, 249, 250, 0.75) !important;
 }
 .p-datatable-wrapper {
-  min-height: calc(100% - 33px);
+  min-height: calc(100% - 36px);
   background-color: rgba(248, 249, 250, 0.75) !important;
 }
 </style>

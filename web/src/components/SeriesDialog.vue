@@ -25,22 +25,20 @@ p-overlaypanel(ref="ratingOverlay", :style="{width: '400px'}")
         .text-xs(style="text-align: right; width: 100%; padding-right: 10px")
           | {{ props.data.reviews.toLocaleString() }}
 
-p-dialog(
+p-dialog.series-dialog(
   :visible="true",
   modal,
   dismissableMask,
-  style="max-width: 900px; width: 900px"
   :draggable="false"
-  :closable="false"
+  :closable="true"
   :closeOnEscape="true"
+  @update:visible="close()"
 )
   template(#header)
-    .grid(style="margin-left: 0; margin-right: 0; flex-basis: 100%;")
-      .col-12
-        .grid
-          p-divider.pb-0.mb-0
-            .font-medium.text-xl {{ selectedSeries.title }}
-      .col-12
+    .grid.m-0(style="flex-basis: 100%;")
+      .col-12.px-0.pt-0
+        .text-xl.title {{ selectedSeries.title }}
+      .col-12.p-0
         .grid
           .col-2
             .font-medium.text-base Setting
@@ -114,10 +112,7 @@ p-dialog(
               optionValue="code",
               :disabled="saving"
             )
-      .col-12(v-if="!editMode")
-        .grid
-          p-divider.py-0.my-0
-  .grid.pt-1(v-if="!editMode")
+  .grid.pt-2(v-if="!editMode")
     p-dataview(:value="selectedSeries.books", layout="grid")
       template(#grid="props")
         .col-6.p-2
@@ -162,25 +157,19 @@ p-dialog(
                   .text-sm(v-for="n in props.data.narrators") {{ n.name }}
               .text-sm.mt-2(style="white-space: pre-wrap;") {{ props.data.description }}
   template(#footer)
-    p-divider.mt-3.mb-0
     .grid
       .col.text-left
-        p-button.p-button-secondary.mt-2(
-          v-if="!editMode"
-          @click="showEditMode"
-          :disabled="saving"
-        ) Update Info
         p-button.p-button-warning.mt-2(
           v-if="editMode"
           @click="editMode = false"
           :disabled="saving"
         ) Cancel Update
       .col
-        p-button.mt-2(
+        p-button.p-button-secondary.mt-2(
           v-if="!editMode"
-          @click="close"
+          @click="showEditMode"
           :disabled="saving"
-        ) Close
+        ) Update Info
         p-button.mt-2(
           v-if="editMode"
           @click="sendUpdate"
@@ -380,4 +369,26 @@ export default {
 </script>
 
 <style>
+.series-dialog {
+  max-width: 900px;
+  width: 900px;
+}
+.series-dialog.p-dialog .p-dialog-header {
+  border: 1px solid #dee2e6;
+  padding: 1rem !important;
+  background: #f8f9fa;
+  color: #495057;
+  border-top-right-radius: 3px;
+  border-top-left-radius: 3px;
+  align-items: flex-start;
+}
+.series-dialog.p-dialog .p-dialog-content {
+  border: 1px solid #dee2e6;
+  padding-top: 1rem !important;
+  padding-bottom: 1rem !important;
+}
+.series-dialog.p-dialog .p-dialog-footer {
+  border: 1px solid #dee2e6;
+  padding: 0rem 1rem !important;
+}
 </style>
