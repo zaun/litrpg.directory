@@ -61,7 +61,7 @@ NewSeriesDialog(
   @close="showAddNew = false"
 )
 
-p-datatable.p-datatable-sm(
+p-datatable.p-datatable-sm.series-table(
   v-if="!loading && !noSearch"
   :value='series',
   dataKey="id",
@@ -439,60 +439,63 @@ export default {
   background-color: rgba(248, 249, 250, 0.8) !important;
 }
 
-.p-datatable-thead th,
-.p-datatable-tbody td.p-frozen-column {
+.series-table .p-datatable-table {
+  width: 2164px;
+}
+
+.series-table .p-datatable-thead th,
+.series-table .p-datatable-tbody td.p-frozen-column {
   background-color: rgba(248, 249, 250, 0.95) !important;
 }
-.p-datatable-thead {
+.series-table .p-datatable-thead {
   z-index: 5 !important;
 }
-.p-datatable-thead th.p-frozen-column {
+.series-table .p-datatable-thead th.p-frozen-column {
   background-color: rgba(248, 249, 250, 0.95) !important;
 }
-.p-datatable-tbody td.p-frozen-column {
-  border-right: 1px solid #e9ecef !important;
-  z-index: 3;
-}
-.p-datatable-tbody {
+.series-table .p-datatable-tbody td.p-frozen-column {
   z-index: 2;
 }
-.p-datatable-tbody td {
+.series-table .p-datatable-tbody {
+  z-index: 1;
+}
+.series-table .p-datatable-tbody td {
   background-color: transparent !important;
 }
-.p-datatable .p-datatable-tbody > tr {
-  background: inherit !important;
+.series-table .p-datatable-tbody > tr {
+  background: transparent !important;
 }
-.p-datatable .p-datatable-tbody > tr:hover {
+.series-table .p-datatable-tbody > tr:hover {
   background: rgba(248, 249, 250, 0.05) !important;
 }
-.p-datatable-loading-overlay {
+.series-table .p-datatable-loading-overlay {
   background-color: rgba(248, 249, 250, 0.95) !important;
 }
-.p-datatable-emptymessage td {
+.series-table .p-datatable-emptymessage td {
   min-width: 100%;
   height: 0px;
   padding: 0px !important;
 }
-.p-rating.text-xs .p-rating-icon {
+.series-table .p-rating.text-xs .p-rating-icon {
   font-size: 1rem !important;
 }
-.p-dialog-header {
+.series-table .p-dialog-header {
   padding-top: 5px !important;
   padding-bottom: 0px !important;
 }
-.p-dialog-content {
+.series-table .p-dialog-content {
   padding-top: 0px !important;
   padding-bottom: 0px !important;
 }
-.p-dialog-content .p-dataview-grid, .p-dataview-content {
+.series-table .p-dialog-content .p-dataview-grid, .p-dataview-content {
   min-width: 100%;
 }
-.p-datatable-footer {
+.series-table .p-datatable-footer {
   padding: 0px 0px 1px 1px !important;
   border: 0px !important;
   background-color: rgba(248, 249, 250, 0.75) !important;
 }
-.p-datatable-wrapper {
+.series-table .p-datatable-wrapper {
   min-height: calc(100% - 36px);
   background-color: rgba(248, 249, 250, 0.75) !important;
 }
