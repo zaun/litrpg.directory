@@ -9,7 +9,6 @@ const scanKindle = require('./scanKindle');
 const update = require('./update');
 const util = require('./util');
 const _ = require('lodash');
-const { getBookById } = require('./util');
 const { forEach } = require('lodash');
 
 exports.handler = (event, context, callback) => {
@@ -80,7 +79,7 @@ exports.handler = (event, context, callback) => {
 
   // Lookup book information from the external sites
   scanAudible(series.name, lookup.audibleUrl)
-  .then((audibleBooks) => ({
+  .then(async (audibleBooks) => ({
     audibleBooks,
     kindleBooks: [], // await scanKindle(series.name, lookup.kindleUrl),
   }))

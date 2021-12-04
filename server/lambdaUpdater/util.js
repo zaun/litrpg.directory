@@ -310,6 +310,7 @@ module.exports = exports = {
     .replace(': A Fantasy LitRPG Adventure', '')
     .replace(' (A Post-Apocalyptic LitRPG)', '')
     .replace(': A Xianxia Cultivation Epic', '')
+    .replace(': A Futuristic Dungeon Core', '')
     .replace(': A Post-Apocalyptic LitRPG', '')
     .replace(': A LitRPG Sci-Fi Adventure', '')
     .replace(': A Dungeon Core Experience', '')

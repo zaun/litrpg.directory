@@ -6,6 +6,7 @@ const GET_IMAGES = false;
 const BLACKLIST_AUDIBLE = [
   'B0728D51H1', // LitRPG Freaks
   'B096G8Z644', // TheFirstDefier
+  'B07BHNPCXK', // Portal Books
 ];
 
 module.exports = exports = async (seriesName, audibleUrl) => {
