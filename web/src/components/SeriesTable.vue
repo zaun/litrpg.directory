@@ -79,7 +79,7 @@ p-datatable.p-datatable-sm.series-table(
   )
     template(#body="props")
       p-button.p-button-text.full-width(@click="showBooks(props.data)")
-        .white-space-nowrap.text-overflow-ellipsis {{ props.data.title }}
+        .text-overflow-ellipsis.text-left {{ props.data.title }}
   p-column(
     field='authors', header="Authors",
     style="flex: 0 0 200px;"
@@ -187,6 +187,7 @@ p-datatable.p-datatable-sm.series-table(
         i.pi.pi-spin.pi-spinner(v-if="init")
       .col-10.text-center.p-0.m-0
         p-button.p-button-secondary.p-button-sm(@click="addSeries") Add Missing Series
+        //- As an Amazon Associate I earn from qualifying purchases
       .col-1.text-sm
 
 p-card.noItemsFound(v-if="!loading && noSearch" style="width: 100%; height: 100%;")
