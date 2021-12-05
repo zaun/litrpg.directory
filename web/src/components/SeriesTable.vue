@@ -227,6 +227,7 @@ export default {
   },
   setup() {
     const store = inject('store');
+    const track = inject('track');
     const PRIMEVUE_VERSION = inject('PRIMEVUE_VERSION') || 'Unknow';
     const VUE_VERSION = inject('VUE_VERSION') || 'Unknow';
 
@@ -340,6 +341,8 @@ export default {
     const showBooks = (series) => {
       selectedSeries.value = series;
       showInfo.value = true;
+      console.log(series);
+      track('showBooks', { series: series.title });
     };
 
     const showRatingTip = (event, series) => {
@@ -362,6 +365,7 @@ export default {
 
     const goto = (url) => {
       window.open(url, '_blank');
+      track('openWindow', { type: 'series', url });
     };
 
     const tipData = computed(() => {

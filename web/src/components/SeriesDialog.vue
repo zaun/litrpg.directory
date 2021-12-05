@@ -198,6 +198,7 @@ export default {
   },
   setup(props, { emit }) {
     const store = inject('store');
+    const track = inject('track');
     const api = inject('api');
     const toast = useToast();
 
@@ -342,6 +343,7 @@ export default {
 
     const goto = (url) => {
       window.open(url, '_blank');
+      track('openWindow', { type: 'book', url });
     };
 
     return {
