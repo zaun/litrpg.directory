@@ -89,13 +89,17 @@ exports.handler = (event, context, callback) => {
     goodreadBooks: await scanGoodreads(series.name, lookup.goodreadsUrl),
   }))
   .then((data) => {
-    const books = [];
     const collections = [
       data.audibleBooks,
       data.kindleBooks,
       data.goodreadBooks
     ];
 
+    return util.log(`Found Audible: ${collections.audibleBooks.length}, Kindle: ${collections.kindleBooks.length}, Goodreads: ${collections.goodreadBooks.length} books`)
+      .then(() => collections);
+  })
+  .then((collections) => {
+    const books = [];
     forEach(collections, (collection) => {
       forEach(collection, (newBook) => {
         // lookup the book from the final list
@@ -203,13 +207,13 @@ exports.handler = (event, context, callback) => {
   .then(() => {
     const endTime = new Date().getTime();
     const ms = (endTime - startTime) / 1000;
-    console.log(`Finished ${series.name} - ${ms}`);
+    return util.log(`Finished ${series.name} - ${ms}ms`);
   })
   .catch(err => {
     const endTime = new Date().getTime();
     const ms = (endTime - startTime) / 1000;
-    console.log(`Error ${series.name} - ${ms}`);
-    console.log(err);
+    return util.log(`Errored ${series.name} - ${ms}ms`)
+    .then(() => util.log(`Errored ${series.name} - ${err.message} - ${err.stack}`));
   });
 
   return {};

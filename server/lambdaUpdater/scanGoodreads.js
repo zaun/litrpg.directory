@@ -11,8 +11,9 @@ module.exports = exports = async (seriesName, goodreadsUrl) => {
     return [];
   }
 
-  console.log(`  Fetching Goodreads: ${goodreadsUrl}`);
-  return util.fetch(goodreadsUrl).then(({ html, cookies }) => {
+  return util.log(`Fetching Goodreads: ${goodreadsUrl}`)
+  .then(() => util.fetch(goodreadsUrl))
+  .then(({ html, cookies }) => {
     const dom = new JSDOM(html);
     const document = dom.window.document;
 
@@ -87,6 +88,10 @@ module.exports = exports = async (seriesName, goodreadsUrl) => {
     return { books, cookies };
   })
   .then(({ books, cookies }) => {
+    if (books.length === 0) {
+      return util.log(`No Goodread books found for ${goodreadsUrl}`);
+    }
+
     const waitFor = [];
     books.forEach((book) => {
       if(book.urls.length > 0) {
@@ -122,6 +127,8 @@ module.exports = exports = async (seriesName, goodreadsUrl) => {
           }
           book.description = `${content}`;
         }));
+      } else {
+        waitFor.push(util.log(`Goodreads - No urls found for "${book.title}" from ${goodreadsUrl}`));
       }
     });
     return Promise.all(waitFor).then(() => books);

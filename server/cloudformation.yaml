@@ -119,6 +119,20 @@ Resources:
           UserPool: !Ref UserPool
           PoolClient: !Ref PoolClient
 
+  LambdaFunctionScheduled:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        ZipFile: exports.handler = function (event, context, callback) { callback(null, event); };
+      Handler: index.handler
+      MemorySize: 1024
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Runtime: nodejs12.x
+      Timeout: 900
+      Environment:
+        Variables:
+          UpdateQueue: !Ref QueueSeriesUpdate
+
   LambdaFunctionUpdater:
     Type: AWS::Lambda::Function
     Properties:
@@ -152,6 +166,15 @@ Resources:
       EventSourceArn: !GetAtt QueueSeriesUpdate.Arn
       FunctionName: !GetAtt LambdaFunctionQueueHandler.Arn
 
+  EventRuleSchedule:
+    Type:  AWS::Events::Rule
+    Properties:
+      ScheduleExpression: cron(0 23 ? * * *)
+      State: ENABLED
+      Targets:
+        - Arn: !GetAtt LambdaFunctionScheduled.Arn
+          Id: 1
+      
   # Auth
 
   UserPool:
@@ -330,6 +353,20 @@ Resources:
     Type: AWS::DynamoDB::Table
     Properties:
       TableName: "NewSeries"
+      BillingMode: "PAY_PER_REQUEST"
+      AttributeDefinitions:
+        - 
+          AttributeName: "timestamp"
+          AttributeType: "N"
+      KeySchema: 
+        - 
+          AttributeName: "timestamp"
+          KeyType: "HASH"
+
+  LogTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: "Log"
       BillingMode: "PAY_PER_REQUEST"
       AttributeDefinitions:
         - 

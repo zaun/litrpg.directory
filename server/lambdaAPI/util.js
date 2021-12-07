@@ -77,18 +77,6 @@ module.exports = exports = {
     .then(result => result ? result.Item : null);
   },
   
-  getBooksBySeriesId(id) {
-    return documentClient.query({
-      TableName: 'Books',
-      IndexName: 'series_index',
-      KeyConditionExpression: 'seriesId = :seriesId',
-      ExpressionAttributeValues: {
-        ':seriesId': `${id}`
-      },
-    }).promise()
-    .then(result => result ? result.Items : null);
-  },
-  
   getPersonById(id) {
     return documentClient.get({
       TableName: 'People',
@@ -115,31 +103,6 @@ module.exports = exports = {
     return scanResults;
   },
 
-  delBookPerson(bookId, personId) {
-    return documentClient.delete({
-      TableName: 'BookPeople',
-      Key: {
-        bookId,
-        id: personId,
-      },
-    }).promise();
-  },
-
-  delBook(bookId) {
-    this.getBookPeopleById(bookId)
-      .then((people) => {
-        return Promise.all(_.map(people, (bp) => this.delBookPerson(bp.bookId, bp.personId)));
-      })
-      .then(() => {
-        return documentClient.delete({
-          TableName: 'Books',
-          Key: {
-            id: bookId,
-          },
-        }).promise();
-      });
-  },
-
   delRequest(seriesId, timestamp) {
     return documentClient.delete({
       TableName: 'Requests',
@@ -147,29 +110,6 @@ module.exports = exports = {
         seriesId,
         timestamp: parseInt(timestamp),
       },
-    }).promise();
-  },
-
-  putSeries(series) {
-    const data = _.cloneDeep(series);
-    data.lastUpdate = new Date().getTime();
-    return documentClient.put({
-      TableName: 'Series',
-      Item: data
-    }).promise();
-  },
-  
-  putBook(book) {
-    return documentClient.put({
-      TableName: 'Books',
-      Item: book
-    }).promise();
-  },
-  
-  putPerson(person) {
-    return documentClient.put({
-      TableName: 'People',
-      Item: person
     }).promise();
   },
   
@@ -184,19 +124,6 @@ module.exports = exports = {
     return documentClient.put({
       TableName: 'NewSeries',
       Item: request
-    }).promise();
-  },
-  
-  putBookPerson(bookId, personId, recordType) {
-    const id = `${bookId}-${personId}-${recordType}`;
-    return documentClient.put({
-      TableName: 'BookPeople',
-      Item: {
-        id,
-        bookId,
-        personId,
-        type: recordType,
-      }
     }).promise();
   },
 
@@ -274,130 +201,5 @@ module.exports = exports = {
       MessageBody: JSON.stringify(data),
       DelaySeconds: 0,
     }).promise();
-  },
-
-  cleanupName(name, seriesName) {
-    const cleaned = name
-    .replace('\n', '')
-    .replace(new RegExp(`${seriesName} [(]Book \\d+[)][:]`), '')
-    .replace(new RegExp(`${seriesName} [(]book \\d+[)][:]`), '')
-    .replace(new RegExp(`[(]${seriesName} Book [#]\\d+[)]`), '')
-    .replace(new RegExp(`[:] The ${seriesName} \\d+[:]`), '')
-    .replace(new RegExp(`[(]${seriesName} Book \\d+[)]`), '')
-    .replace(new RegExp(`${seriesName} [(]Book \\d+[)]`), '')
-    .replace(new RegExp(`${seriesName} Book \\d+[:]`), '')
-    .replace(new RegExp(`The ${seriesName} \\d+[:]`), '')
-    .replace(new RegExp(`Book \\d+, `), '')
-    .replace(new RegExp(`Book \\d+: `), '')
-    .replace(new RegExp(`[(]Vol\.\\d+[)]`), '')
-    .replace(new RegExp(`[(]Vol\. \\d+[)]`), '')
-    .replace(new RegExp(`[-] Vol\. \\d+`), '')
-    .replace(new RegExp(`[-] Vol\.\\d+`), '')
-    .replace(new RegExp(`[:] Volume \\d+`), '')
-    .replace(new RegExp(`[,:] Book \\d+ of a Xianxia Cultivation Epic`), '')
-    .replace(new RegExp(`[,:] Book \\d+ Of A Xianxia Cultivation Epic`), '')
-    .replace(new RegExp(`[,:] Book \\d+ Of A Xianxia Cultivation Series`), '')
-    .replace(': A Xianxia Cultivation Fantasy Epic Series', '')
-    .replace(': A Science fiction fantasy LitRPG Series', '')
-    .replace(': A LitRPG Post-Apocalyptic Space Opera', '')
-    .replace(': A LitRPG and GameLit Fantasy Series', '')
-    .replace(': A Humorous LitRPG/GameLit Adventure', '')
-    .replace(': An Apocalyptic Space Opera LitRPG', '')
-    .replace(': A Paranormal LitRPG Dungeon Core', '')
-    .replace(': An Urban Fantasy Harem Adventure', '')
-    .replace(': An Epic LitRPG/GameLit Adventure', '')
-    .replace(': A LitRPG Dungeon Core Adventure', '')
-    .replace('(A LitRPG Dungeon Core Adventure)', '')
-    .replace(': A LitRPG and GameLit Adventure', '')
-    .replace(': An Apocalyptic LitRPG Series', '')
-    .replace(': A LitRPG and GameLit Series', '')
-    .replace(': A LitRPG Fantasy Adventure', '')
-    .replace(': A LitRPG/GameLit Adventure', '')
-    .replace(': A LitRPG/Gamelit Adventure', '')
-    .replace(': A Fantasy LitRPG Adventure', '')
-    .replace(' (A Post-Apocalyptic LitRPG)', '')
-    .replace(': A Xianxia Cultivation Epic', '')
-    .replace(': A Post-Apocalyptic LitRPG', '')
-    .replace(': A LitRPG Sci-Fi Adventure', '')
-    .replace(': A Dungeon Core Experience', '')
-    .replace(': An Epic LitRPG Adventure', '')
-    .replace(': A Monster Girl Adventure', '')
-    .replace(': An Ether Collapse Series', '')
-    .replace(': A Divine Dungeon Series', '')
-    .replace(': A Dungeon Core Escapade', '')
-    .replace(': LitRPG Progression Saga', '')
-    .replace(': A Xianxia Fantasy Epic', '')
-    .replace(': A LitRPG/GameLit Novel', '')
-    .replace(': A LitRPG/Gamelit Novel', '')
-    .replace(': A Sci-fi LitRPG Story', '')
-    .replace(': An Epic LitRPG Series', '')
-    .replace(': An Apocalyptic LitRPG', '')
-    .replace(': A Dungeon Core Novel', '')
-    .replace(' (A LitRPG Apocalypse)', '')
-    .replace(' (A LitRPG Adventure)', '')
-    .replace(': A LitRPG Apocalypse', '')
-    .replace(': A Cultivation Novel', '')
-    .replace(': A Dungeon Core Epic', '')
-    .replace(', a LitRPG adventure', '')
-    .replace(': A LitRPG Adventure', '')
-    .replace(': A litRPG Adventure', '')
-    .replace(': A litRPG Anthology', '')
-    .replace(': A LitRPG Journey', '')
-    .replace(': A LitRPG Series', '')
-    .replace(': A LitRPG Novel', '')
-    .replace(': RealRPG Series', '')
-    .replace(': LitRPG Series', '')
-    .replace(': A LitRPG Saga', '')
-    .replace(': Book Three', '')
-    .replace('Book Three :', '')
-    .replace('Book Three:', '')
-    .replace('Book One :', '')
-    .replace('Book Two :', '')
-    .replace(': Book One', '')
-    .replace(': Book Two', '')
-    .replace('Book One:', '')
-    .replace('Book Two:', '')
-    .replace('Book III:', '')
-    .replace('Book II:', '')
-    .replace('Book I:', '')
-    .replace(`The ${seriesName}: `, '')
-    .replace(`${seriesName}: `, '')
-    .replace(`The ${seriesName}, `, '')
-    .replace(`${seriesName}, `, '')
-    .replace(`(${seriesName})`, '')
-    .replace(`: ${seriesName}`, '')
-    .replace(`: The ${seriesName}`, '')
-    .trim();
-
-    // Normilize names or just retuen the cleaned up version
-    switch(cleaned.toLowerCase()) {
-      case 'aaaron crash':
-        return 'Aaron Crash';
-      case 'james hunter':
-        return 'James A. Hunter';
-      case 'jason cheek':
-        return 'Jason A. Cheek';
-      case 'eric martin':
-        return 'Eric Jason Martin';
-      case 'jeffrey "falcon" logue':
-        return 'Jeffrey Logue';
-      case 'michael g. manning':
-        return 'Michael Manning';
-      default:
-        return cleaned;
-    }
-  },
-
-  cyrb53(inp, seed = 0) {
-    const str = inp.toLowerCase().replace(/[ .,':]/g, '');
-    let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
-    for (let i = 0, ch; i < str.length; i++) {
-        ch = str.charCodeAt(i);
-        h1 = Math.imul(h1 ^ ch, 2654435761);
-        h2 = Math.imul(h2 ^ ch, 1597334677);
-    }
-    h1 = Math.imul(h1 ^ (h1>>>16), 2246822507) ^ Math.imul(h2 ^ (h2>>>13), 3266489909);
-    h2 = Math.imul(h2 ^ (h2>>>16), 2246822507) ^ Math.imul(h1 ^ (h1>>>13), 3266489909);
-    return `${4294967296 * (2097151 & h2) + (h1>>>0)}`;
   },
 };

@@ -204,6 +204,21 @@ DynamoDbLocal.launch(config.dynamoLocalPort, path.join(__dirname, 'temp'), [], f
     }
   });
 }).then(() => {
+  return dynamodb.createTable({
+    TableName: 'Log',
+    BillingMode: 'PAY_PER_REQUEST',
+    KeySchema: [
+      { AttributeName: 'timestamp', KeyType: 'HASH' },
+    ],
+    AttributeDefinitions: [
+      { AttributeName: 'timestamp', AttributeType: 'N' },
+    ],
+  }).promise().catch((te) => {
+    if (te && te.code !== 'ResourceInUseException') {
+      console.log(te);
+    }
+  });
+}).then(() => {
   return new Promise((resolve, reject) => {
     fs.ensureDirSync(path.join(__dirname, 'temp', 's3'));
     new S3rver({

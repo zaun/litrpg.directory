@@ -14,12 +14,14 @@ module.exports = exports = async (seriesName, audibleUrl) => {
     return [];
   }
 
-  console.log(`  Fetching Audible: ${audibleUrl}`);
-  return util.fetch(audibleUrl).then(({ html }) => {
+  return util.log(`Fetching Audible: ${audibleUrl}`)
+  .then(() => util.fetch(audibleUrl))
+  .then(({ html }) => {
     const dom = new JSDOM(html);
     const document = dom.window.document;
 
     const books = [];
+    const logs = [];
 
     const elsBooks = document.querySelectorAll('.productListItem');
     elsBooks.forEach((elBook) => {
@@ -120,7 +122,7 @@ module.exports = exports = async (seriesName, audibleUrl) => {
         let bookNumberParsed = parseFloat(bookNumber);
         if (_.isNaN(bookNumberParsed)) {
           bookNumberParsed = 0;
-          console.log(`A - Cant parse book number ${bookNumber} for ${title}`);
+          logs.push(util.log(`Audible - Cant parse book number "${bookNumber}" for "${title}" from ${audibleUrl}`));
         }
         const bookData = {
           id: util.cyrb53(`${bookNumberParsed} ${title}`),
@@ -140,9 +142,13 @@ module.exports = exports = async (seriesName, audibleUrl) => {
       }
     });
     
-    return books;
+    return Promise.all(logs).then(() => books);
   })
   .then((books) => {
+    if (books.length === 0) {
+      return util.log(`No Audible books found for ${audibleUrl}`);
+    }
+
     const waitFor = [];
     books.forEach((book) => {
       if(book.urls.length > 0) {
@@ -174,6 +180,8 @@ module.exports = exports = async (seriesName, audibleUrl) => {
           }
           book.description = `${content}`;
         }));
+      } else {
+        waitFor.push(util.log(`Audible - No urls found for "${book.title}" from ${audibleUrl}`));
       }
     });
     return Promise.all(waitFor).then(() => books);

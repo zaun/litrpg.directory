@@ -243,7 +243,8 @@ module.exports = exports = {
     
         // The whole response has been received. Print out the result.
         resp.on('end', () => {
-          resolve({ html: data.read().toString('utf8'), cookies: resp.headers["set-cookie"].map((c) => c.split(';').shift()) });
+          const cookies =  resp.headers["set-cookie"] ? resp.headers["set-cookie"].map((c) => c.split(';').shift()) : [];
+          resolve({ html: data.read().toString('utf8'), cookies });
         });
     
       }).on("error", (err) => {
@@ -251,6 +252,16 @@ module.exports = exports = {
         reject(err);
       });
     });
+  },
+
+  log(message) {
+    return documentClient.put({
+      TableName: 'Log',
+      Item: {
+        timestamp: new Date().getTime(),
+        message,
+      },
+    }).promise();
   },
 
   addToQueue(data) {

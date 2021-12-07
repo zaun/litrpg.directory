@@ -14,19 +14,16 @@ module.exports = exports = async (seriesName, kindleUrl) => {
     return [];
   }
 
-  console.log(`  Fetching Kindle: ${kindleUrl}`);
-  return util.fetch(kindleUrl).then(({ html }) => {
+  return util.log(`Fetching Kindle: ${kindleUrl}`)
+  .then(() => util.fetch(kindleUrl))
+  .then(({ html }) => {
     const dom = new JSDOM(html);
     const document = dom.window.document;
     
     const books = [];
+    const logs = [];
 
     const elsBooks = document.querySelectorAll('#series-childAsin-list .series-childAsin-item');
-    if (elsBooks.length === 0) {
-      console.log('No Kindle books found');
-      console.log(html);
-      return [];
-    }
     elsBooks.forEach((elBook) => {
       const bookNumber = elBook.querySelector('.itemPositionLabel').textContent.trim();
       const title = util.cleanupName(elBook.querySelector('.itemBookTitle').textContent.trim(), seriesName);
@@ -101,7 +98,7 @@ module.exports = exports = async (seriesName, kindleUrl) => {
         let bookNumberParsed = parseFloat(bookNumber);
         if (_.isNaN(bookNumberParsed)) {
           bookNumberParsed = 0;
-          console.log(`K - Cant parse book number ${bookNumber} for ${title}`);
+          logs.push(util.log(`Kindle - Cant parse book number "${bookNumber}" for "${title}" from ${kindleUrl}`));
         }
         books.push({
           id: util.cyrb53(`${bookNumberParsed} ${title}`),
@@ -118,9 +115,14 @@ module.exports = exports = async (seriesName, kindleUrl) => {
         });
       }
     });
-    return books;
+
+    return Promise.all(logs).then(() => books);
   })
   .then((books) => {
+    if (books.length === 0) {
+      return util.log(`No Kindle books found for ${kindleUrl}`);
+    }
+
     const waitFor = [];
     books.forEach((book) => {
       waitFor.push(util.fetch(book.urls[0].url).then(({ html }) => {
