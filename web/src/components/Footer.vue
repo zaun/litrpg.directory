@@ -17,6 +17,7 @@ p-card.footer
 
 <script>
 import {
+  inject,
   ref,
 } from 'vue';
 
@@ -28,12 +29,14 @@ export default {
     NewSeriesDialog,
   },
   setup() {
+    const track = inject('track');
     const showAddNew = ref(false);
     const resourceMenu = ref(null);
 
     const openWindow = (url) => {
       resourceMenu.value.hide();
       window.open(url, '_blank');
+      track('openWindow', { type: 'resource', url });
     };
 
     const resources = [{
