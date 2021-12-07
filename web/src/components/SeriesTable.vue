@@ -56,11 +56,6 @@ SeriesDialog(
   @close="showInfo = false"
 )
 
-NewSeriesDialog(
-  v-if="showAddNew",
-  @close="showAddNew = false"
-)
-
 p-datatable.p-datatable-sm.series-table(
   v-if="!loading && !noSearch"
   :value='series',
@@ -181,14 +176,6 @@ p-datatable.p-datatable-sm.series-table(
       span
         | {{ new Date(props.data.lastUpdate).toLocaleDateString() }}
         | {{ new Date(props.data.lastUpdate).toLocaleTimeString([], { timeStyle: 'short' }) }}
-  template(#footer)
-    .grid.p-0.m-0
-      .col-1.text-xs
-        i.pi.pi-spin.pi-spinner(v-if="init")
-      .col-10.text-center.p-0.m-0
-        p-button.p-button-secondary.p-button-sm(@click="addSeries") Add Missing Series
-        //- As an Amazon Associate I earn from qualifying purchases
-      .col-1.text-sm
 
 p-card.noItemsFound(v-if="!loading && noSearch" style="width: 100%; height: 100%;")
   template(#content)
@@ -217,13 +204,11 @@ import {
 } from 'lodash';
 
 import SeriesDialog from '@/components/SeriesDialog.vue';
-import NewSeriesDialog from '@/components/NewSeriesDialog.vue';
 
 export default {
   name: 'SeriesTable',
   components: {
     SeriesDialog,
-    NewSeriesDialog,
   },
   setup() {
     const store = inject('store');
@@ -234,18 +219,16 @@ export default {
     const infoOverlay = ref(null);
     const infoTipMode = ref('setting');
     const ratingOverlay = ref(null);
-    const showAddNew = ref(false);
     const showInfo = ref(false);
     const selectedSeries = ref({});
 
-    const init = ref(true);
     const loading = ref(true);
     const error = ref(false);
 
     watch(
       () => store.state.series,
       () => {
-        if (store.state.series.length > 0 && init.value) {
+        if (store.state.series.length > 0) {
           loading.value = false;
         }
       },
@@ -256,7 +239,6 @@ export default {
         error.value = true;
       }
       loading.value = false;
-      init.value = false;
     });
 
     const filteredSeries = () => filter(store.state.series, (s) => {
@@ -381,18 +363,12 @@ export default {
       return [];
     });
 
-    const addSeries = () => {
-      showAddNew.value = true;
-    };
-
     return {
       VUE_VERSION,
       PRIMEVUE_VERSION,
-      init,
       loading,
       series: computed(filteredSeries, []),
       noSearch,
-      showAddNew,
       showInfo,
       selectedSeries,
       displayBool,
@@ -406,7 +382,6 @@ export default {
       hideInfoTip,
       tipData,
       goto,
-      addSeries,
       infoOverlay,
       ratingOverlay,
       settingOptions: store.state.settingOptions,
@@ -495,13 +470,8 @@ export default {
 .series-table .p-dialog-content .p-dataview-grid, .p-dataview-content {
   min-width: 100%;
 }
-.series-table .p-datatable-footer {
-  padding: 0px 0px 1px 1px !important;
-  border: 0px !important;
-  background-color: rgba(248, 249, 250, 0.75) !important;
-}
 .series-table .p-datatable-wrapper {
-  min-height: calc(100% - 36px);
+  min-height: 100%;
   background-color: rgba(248, 249, 250, 0.75) !important;
 }
 </style>

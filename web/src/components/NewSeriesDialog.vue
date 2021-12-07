@@ -111,6 +111,15 @@ export default {
           detail: 'New series request has been sent.',
           life: 5000,
         });
+      }).catch(() => {
+        busy.value = false;
+        emit('close');
+        toast.add({
+          severity: 'error',
+          summary: 'Request Not Sent',
+          detail: 'There was an issue sending the new series request. Please try again later.',
+          life: 5000,
+        });
       });
     };
 

@@ -11,6 +11,7 @@ import Dropdown from 'primevue/dropdown';
 import InlineMessage from 'primevue/inlinemessage';
 import InputNumber from 'primevue/inputnumber';
 import InputText from 'primevue/inputtext';
+import Menu from 'primevue/menu';
 import MultiSelect from 'primevue/multiselect';
 import OverlayPanel from 'primevue/overlaypanel';
 import Panel from 'primevue/panel';
@@ -43,6 +44,7 @@ export default (app) => {
   app.component('p-inlinemessage', InlineMessage);
   app.component('p-inputnumber', InputNumber);
   app.component('p-inputtext', InputText);
+  app.component('p-menu', Menu);
   app.component('p-multiselect', MultiSelect);
   app.component('p-overlaypanel', OverlayPanel);
   app.component('p-panel', Panel);
