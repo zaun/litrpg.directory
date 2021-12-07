@@ -1,8 +1,7 @@
 /*
- * this function is called automatically by the QueueSeriesUpdate SQS
- * Queue. This function does no work, it simply calls the update
- * function once for each new SQS record. Each record is a Series
- * that needs updated.
+ * this function is setup to be called via an AWS scheduled
+ * event. This should be called once a day. It will queue up
+ * everything to be re-scanned.
  */
 
 const AWS = require('aws-sdk');
