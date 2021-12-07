@@ -63,21 +63,19 @@ const addToQueue = (data) => {
   }).promise();
 };
 
-exports.handler = async () => {
-  getAll('Series').then((series) => {
-    const waitFor = [];
-    series.forEach((s) => addToQueue(s));
-    return Promise.all(waitFor).then(() => series.length);
-  }).then(() => {
-    return documentClient.put({
-      TableName: 'Log',
-      Item: {
-        timestamp: new Date().getTime(),
-        message: 'Scheduled series update started.',
-      },
-    }).promise();
-  });
-};
+exports.handler = async () => getAll('Series').then((series) => {
+  const waitFor = [];
+  series.forEach((s) => waitFor.push(addToQueue(s)));
+  return Promise.all(waitFor).then(() => series.length);
+}).then((count) => {
+  return documentClient.put({
+    TableName: 'Log',
+    Item: {
+      timestamp: new Date().getTime(),
+      message: `Scheduled series update started, scheduled ${count}.`,
+    },
+  }).promise();
+});
 
 // If running this from a dev environmet just call the function
 if (process.env.NODE_ENV === 'development') {

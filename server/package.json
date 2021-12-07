@@ -7,7 +7,7 @@
     "build-lambdaSQSHandler": "mkdir -p ../dist; rm -f ../dist/sqshandler.zip; cp -r ./lambdaSQSHandler ../dist; cd ../dist/lambdaSQSHandler; zip -r ../sqshandler.zip ./; cd ..; rm -rf lambdaSQSHandler",
     "build-lambdaAPI": "mkdir -p ../dist; rm -f ../dist/api.zip; cp -r ./lambdaAPI ../dist; cp package.json ../dist/lambdaAPI; cd ../dist/lambdaAPI; npm install --production; zip -r ../api.zip ./; cd ..; rm -rf lambdaAPI",
     "build-lambdaUpdater": "mkdir -p ../dist; rm -f ../dist/updater.zip; cp -r ./lambdaUpdater ../dist; cp package.json ../dist/lambdaUpdater; cd ../dist/lambdaUpdater; npm install --production; zip -r ../updater.zip ./; cd ..; rm -rf lambdaUpdater",
-    "build-lambdaScheduled": "mkdir -p ../dist; rm -f ../dist/scheduled.zip; cp -r ./lambdaScheduled ../dist; cp package.json ../dist/lambdaScheduled; cd ../dist/lambdaScheduled; npm install --production; zip -r ../scheduled.zip ./; cd ..; rm -rf lambdaScheduled",
+    "build-lambdaScheduled": "mkdir -p ../dist; rm -f ../dist/scheduled.zip; cp -r ./lambdaScheduled ../dist; cd ../dist/lambdaScheduled; zip -r ../scheduled.zip ./; cd ..; rm -rf lambdaScheduled",
     "serve": "rm -rf ./temp ; mkdir -p ./temp ; NODE_ENV=development UserPool=us-west-2_eBnYkrtNi PoolClient=u42sllobpaakqs5n8ell7omt5 nodemon --watch ./lambdaAPI --watch ./lambdaUpdater local",
     "run-scheduled": "NODE_ENV=development node ./lambdaScheduled/index.js"
   },
