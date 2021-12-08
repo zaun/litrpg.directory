@@ -95,7 +95,7 @@ exports.handler = (event, context, callback) => {
       data.goodreadBooks
     ];
 
-    return util.log('scan', `Found Audible: ${data.audibleBooks.length}, Kindle: ${data.kindleBooks.length}, Goodreads: ${data.goodreadBooks.length} books`)
+    return util.log('scan', `Found Audible: ${data.audibleBooks.length}, Kindle: ${data.kindleBooks.length}, Goodreads: ${data.goodreadBooks.length} books for ${lookup.name}`)
       .then(() => collections);
   })
   .then((collections) => {
@@ -103,7 +103,16 @@ exports.handler = (event, context, callback) => {
     forEach(collections, (collection) => {
       forEach(collection, (newBook) => {
         // lookup the book from the final list
-        let masterBook = _.find(books, { bookNumber: newBook.bookNumber });
+        let masterBook = null;
+        const collestionWithNumber = _.filter(collection, { bookNumber: newBook.bookNumber });
+        if (collestionWithNumber === 1) {
+          const foundBooks = _.filter(books, { bookNumber: newBook.bookNumber });
+          if (foundBooks.length === 1) {
+            masterBook = foundBooks[0];
+          } else {
+            masterBook = _.find(foundBooks, { title: newBook.title });
+          }
+        }
 
         // If not by book number, try by title
         if (!masterBook) {
@@ -207,11 +216,13 @@ exports.handler = (event, context, callback) => {
   .then(() => {
     const endTime = new Date().getTime();
     const ms = (endTime - startTime) / 1000;
+    console.log(`Finished ${lookup.name}`);
     return util.log('scan', `Finished ${series.name} - ${ms}ms`);
   })
   .catch(err => {
     const endTime = new Date().getTime();
     const ms = (endTime - startTime) / 1000;
+    console.log(`Finished ${lookup.name}`);
     return util.log('scan', `Errored ${series.name} - ${ms}ms`)
     .then(() => util.log('scan', `Errored ${series.name} - ${err.message} - ${err.stack}`));
   });

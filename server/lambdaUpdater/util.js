@@ -354,6 +354,7 @@ module.exports = exports = {
     .replace(': RealRPG Series', '')
     .replace(': LitRPG Series', '')
     .replace(': A LitRPG Saga', '')
+    .replace(': A litRPG Saga', '')
     .replace(': Book Three', '')
     .replace('Book Three :', '')
     .replace('Book Three:', '')
