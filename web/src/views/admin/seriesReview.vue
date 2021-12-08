@@ -12,7 +12,7 @@
     )
       p-column(
         field='series.name', header="Series Name", :sortable="true",
-        style="flex-grow: 1; flex-basis: 200px;"
+        style="flex-grow: 1; flex-basis: 150px;"
       )
       p-column(
         field='timestamp', header="Timestamp", :sortable="true",
@@ -26,18 +26,22 @@
       )
       p-column(
         field='oldValue', header="Old Value", :sortable="true",
-        style="flex-basis: 100px;"
-      )
-      p-column(
-        field='newValue', header="New Vaule", :sortable="true",
-        style="flex-basis: 100px;"
-      )
-      p-column(
-        field='curValue', header="Current Vaule", :sortable="true",
-        style="flex-basis: 100px;"
+        style="flex-basis: 150px;"
       )
         template(#body="props")
-          span {{ props.data.series[props.data.field] }}
+          span {{ diaplay(props.data.field, props.data.oldValue) }}
+      p-column(
+        field='newValue', header="New Vaule", :sortable="true",
+        style="flex-basis: 150px;"
+      )
+        template(#body="props")
+          span {{ diaplay(props.data.field, props.data.newValue) }}
+      p-column(
+        field='curValue', header="Current Vaule", :sortable="true",
+        style="flex-basis: 150px;"
+      )
+        template(#body="props")
+          span {{ diaplay(props.data.field, props.data.series[props.data.field]) }}
       p-column(
         header="Actions", :sortable="true",
         style="flex-basis: 110px;"
@@ -50,7 +54,7 @@
       .col
       .col.text-center
         p-panel.mt-4
-          template(#header) Book Review
+          template(#header) Series Review
           p.text-left
             | No requests found.
           p-button(@click="loadRequests", :disabled="busy") Refresh
@@ -63,6 +67,10 @@ import {
   inject,
   ref,
 } from 'vue';
+
+import {
+  find,
+} from 'lodash';
 
 import { useToast } from 'primevue/usetoast';
 
@@ -133,6 +141,55 @@ export default {
       },
     );
 
+    const displayBool = (val) => {
+      if (!val) {
+        return '--';
+      }
+      const ret = find(store.state.ynOptions, { code: val.toUpperCase() });
+      return ret ? ret.name : '--';
+    };
+
+    const displaySetting = (val) => {
+      if (!val) {
+        return '--';
+      }
+      const setting = find(store.state.settingOptions, { code: val.toUpperCase() });
+      return setting ? setting.name : '--';
+    };
+
+    const displayPlot = (val) => {
+      if (!val) {
+        return '--';
+      }
+      const setting = find(store.state.plotOptions, { code: val.toUpperCase() });
+      return setting ? setting.name : '--';
+    };
+
+    const displayEra = (val) => {
+      if (!val) {
+        return '--';
+      }
+      const setting = find(store.state.eraOptions, { code: val.toUpperCase() });
+      return setting ? setting.name : '--';
+    };
+
+    const diaplay = (field, val) => {
+      switch (field) {
+        case 'plot':
+          return displayPlot(val);
+        case 'setting':
+          return displaySetting(val);
+        case 'era':
+          return displayEra(val);
+        case 'harem':
+        case 'completed':
+        case 'young':
+          return displayBool(val);
+        default:
+          return val;
+      }
+    };
+
     return {
       busy,
       requests,
@@ -140,6 +197,7 @@ export default {
       formatDate,
       loadRequests,
       removeRequest,
+      diaplay,
     };
   },
 };
