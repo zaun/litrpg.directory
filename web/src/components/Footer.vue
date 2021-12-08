@@ -9,10 +9,10 @@ p-card.footer
     .grid.m-0.p-0
       .col.m-0.p-0.text-left
         p-button.p-button-text.p-button-sm.btn(@click="addSeries") Add Missing Series
-      .col.m-0.p-0.text-center.quote(:style="{ 'line-height': quote.t2 ? '16px' : '32px' }")
+      .col.m-0.p-0.text-center.quote.hide-sm(:style="{ 'line-height': quote.t2 ? '16px' : '32px' }")
         div {{ quote.t || quote.t1 }}
         div {{ quote.t2 || '' }}
-      .col.m-0.p-0.text-right
+      .col.m-0.p-0.text-right.hide-sm
         p-button.p-button-text.p-button-sm.btn(@click="showResouces") More Resources
         p-overlaypanel(ref="resourceMenu" :dismissable="true")
           p-menu.footer(:model="resources")
@@ -172,5 +172,11 @@ export default {
   font-size: 0.8rem;
   flex: 0 0 300px;
   font-style: italic;
+}
+
+@media only screen and (max-width: 639px) {
+  .footer .quote {
+    display: none;
+  }
 }
 </style>
