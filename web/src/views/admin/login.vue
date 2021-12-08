@@ -34,7 +34,7 @@
           .col.pb-0.text-right
             p-button(
               @click="login",
-              :disabled="validForm",
+              :disabled="validForm || busy",
             ) Login
   .col
 </template>
@@ -52,6 +52,7 @@ export default {
 
     const newPassword = ref(false);
     const showError = ref(false);
+    const busy = ref(false);
     const loginForm = ref({
       username: '',
       password: '',
@@ -59,11 +60,13 @@ export default {
     });
 
     const login = () => {
+      busy.value = true;
       store.authenticate(
         loginForm.value.username,
         loginForm.value.password,
         loginForm.value.newPassword,
       ).then((code) => {
+        busy.value = false;
         showError.value = false;
         newPassword.value = false;
         switch (code) {
@@ -94,6 +97,7 @@ export default {
     });
 
     return {
+      busy,
       showError,
       newPassword,
       loginForm,

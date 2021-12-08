@@ -1,8 +1,12 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
 
-import SeriesList from '@/views/SeriesList.vue';
-import Admin from '@/views/Admin.vue';
-import AdminLogin from '@/views/AdminLogin.vue';
+import Admin from '@/views/admin/admin.vue';
+import AdminLogin from '@/views/admin/login.vue';
+import AdminSeriesAdd from '@/views/admin/seriesAdd.vue';
+import AdminSeriesReview from '@/views/admin/seriesReview.vue';
+import AdminScan from '@/views/admin/scan.vue';
+import AdminScanLog from '@/views/admin/scanLog.vue';
+import SeriesList from '@/views/seriesList.vue';
 
 export default (app) => {
   const routes = [{
@@ -19,20 +23,28 @@ export default (app) => {
         next();
         return;
       }
-      next({ path: '/admin/login' });
-    },
-  }, {
-    name: 'login',
-    path: '/admin/login',
-    component: AdminLogin,
-    beforeEnter: (to, from, next) => {
-      const { store } = app.config.globalProperties;
-      if (!store.state.authenticated) {
-        next();
+      if (to.path !== '/admin/login') {
+        next({ path: '/admin/login' });
         return;
       }
-      next({ path: '/admin' });
+      next();
     },
+    children: [{
+      path: 'login',
+      component: AdminLogin,
+    }, {
+      path: 'series/add',
+      component: AdminSeriesAdd,
+    }, {
+      path: 'series/review',
+      component: AdminSeriesReview,
+    }, {
+      path: 'scan',
+      component: AdminScan,
+    }, {
+      path: 'scan/log',
+      component: AdminScanLog,
+    }],
   }, {
     path: '/:catchAll(.*)',
     redirect: { name: 'home' },
