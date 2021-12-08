@@ -362,6 +362,7 @@ module.exports = exports = {
     .replace('Book Two :', '')
     .replace(': Book One', '')
     .replace(': Book Two', '')
+    .replace(': A 4x Lit', '')
     .replace('Book One:', '')
     .replace('Book Two:', '')
     .replace('Book III:', '')

@@ -105,7 +105,7 @@ exports.handler = (event, context, callback) => {
         // lookup the book from the final list
         let masterBook = null;
         const collestionWithNumber = _.filter(collection, { bookNumber: newBook.bookNumber });
-        if (collestionWithNumber === 1) {
+        if (collestionWithNumber.length === 1) {
           const foundBooks = _.filter(books, { bookNumber: newBook.bookNumber });
           if (foundBooks.length === 1) {
             masterBook = foundBooks[0];
@@ -113,6 +113,8 @@ exports.handler = (event, context, callback) => {
             masterBook = _.find(foundBooks, { title: newBook.title });
           }
         }
+
+        // console.log(newBook.title, masterBook ? masterBook.title : '--', collestionWithNumber.length);
 
         // If not by book number, try by title
         if (!masterBook) {
