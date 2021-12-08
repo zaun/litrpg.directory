@@ -202,4 +202,15 @@ module.exports = exports = {
       DelaySeconds: 0,
     }).promise();
   },
+
+  log(type, message) {
+    return documentClient.put({
+      TableName: 'Log',
+      Item: {
+        type,
+        timestamp: new Date().getTime(),
+        message,
+      },
+    }).promise();
+  },
 };

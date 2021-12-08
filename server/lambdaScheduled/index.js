@@ -70,6 +70,7 @@ exports.handler = async () => getAll('Series').then((series) => {
   return documentClient.put({
     TableName: 'Log',
     Item: {
+      type: 'scan',
       timestamp: new Date().getTime(),
       message: `Scheduled series update started, scheduled ${count}.`,
     },

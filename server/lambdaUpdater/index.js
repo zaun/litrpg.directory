@@ -95,7 +95,7 @@ exports.handler = (event, context, callback) => {
       data.goodreadBooks
     ];
 
-    return util.log(`Found Audible: ${collections.audibleBooks.length}, Kindle: ${collections.kindleBooks.length}, Goodreads: ${collections.goodreadBooks.length} books`)
+    return util.log('scan', `Found Audible: ${data.audibleBooks.length}, Kindle: ${data.kindleBooks.length}, Goodreads: ${data.goodreadBooks.length} books`)
       .then(() => collections);
   })
   .then((collections) => {
@@ -207,13 +207,13 @@ exports.handler = (event, context, callback) => {
   .then(() => {
     const endTime = new Date().getTime();
     const ms = (endTime - startTime) / 1000;
-    return util.log(`Finished ${series.name} - ${ms}ms`);
+    return util.log('scan', `Finished ${series.name} - ${ms}ms`);
   })
   .catch(err => {
     const endTime = new Date().getTime();
     const ms = (endTime - startTime) / 1000;
-    return util.log(`Errored ${series.name} - ${ms}ms`)
-    .then(() => util.log(`Errored ${series.name} - ${err.message} - ${err.stack}`));
+    return util.log('scan', `Errored ${series.name} - ${ms}ms`)
+    .then(() => util.log('scan', `Errored ${series.name} - ${err.message} - ${err.stack}`));
   });
 
   return {};

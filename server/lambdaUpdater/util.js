@@ -254,10 +254,11 @@ module.exports = exports = {
     });
   },
 
-  log(message) {
+  log(type, message) {
     return documentClient.put({
       TableName: 'Log',
       Item: {
+        type,
         timestamp: new Date().getTime(),
         message,
       },

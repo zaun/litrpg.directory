@@ -370,12 +370,18 @@ Resources:
       BillingMode: "PAY_PER_REQUEST"
       AttributeDefinitions:
         - 
+          AttributeName: "type"
+          AttributeType: "S"
+        - 
           AttributeName: "timestamp"
           AttributeType: "N"
       KeySchema: 
         - 
-          AttributeName: "timestamp"
+          AttributeName: "type"
           KeyType: "HASH"
+        - 
+          AttributeName: "timestamp"
+          KeyType: "RANGE"
 
   # API Gateway
   

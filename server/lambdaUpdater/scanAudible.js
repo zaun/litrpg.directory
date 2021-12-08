@@ -14,7 +14,7 @@ module.exports = exports = async (seriesName, audibleUrl) => {
     return [];
   }
 
-  return util.log(`Fetching Audible: ${audibleUrl}`)
+  return util.log('scan', `Fetching Audible: ${audibleUrl}`)
   .then(() => util.fetch(audibleUrl))
   .then(({ html }) => {
     const dom = new JSDOM(html);
@@ -122,7 +122,7 @@ module.exports = exports = async (seriesName, audibleUrl) => {
         let bookNumberParsed = parseFloat(bookNumber);
         if (_.isNaN(bookNumberParsed)) {
           bookNumberParsed = 0;
-          logs.push(util.log(`Audible - Cant parse book number "${bookNumber}" for "${title}" from ${audibleUrl}`));
+          logs.push(util.log('scan', `Audible - Cant parse book number "${bookNumber}" for "${title}" from ${audibleUrl}`));
         }
         const bookData = {
           id: util.cyrb53(`${bookNumberParsed} ${title}`),
@@ -146,7 +146,7 @@ module.exports = exports = async (seriesName, audibleUrl) => {
   })
   .then((books) => {
     if (books.length === 0) {
-      return util.log(`No Audible books found for ${audibleUrl}`);
+      return util.log('scan', `No Audible books found for ${audibleUrl}`).then(() => []);
     }
 
     const waitFor = [];
@@ -181,7 +181,7 @@ module.exports = exports = async (seriesName, audibleUrl) => {
           book.description = `${content}`;
         }));
       } else {
-        waitFor.push(util.log(`Audible - No urls found for "${book.title}" from ${audibleUrl}`));
+        waitFor.push(util.log('scan', `Audible - No urls found for "${book.title}" from ${audibleUrl}`));
       }
     });
     return Promise.all(waitFor).then(() => books);

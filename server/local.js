@@ -208,9 +208,11 @@ DynamoDbLocal.launch(config.dynamoLocalPort, path.join(__dirname, 'temp'), [], f
     TableName: 'Log',
     BillingMode: 'PAY_PER_REQUEST',
     KeySchema: [
-      { AttributeName: 'timestamp', KeyType: 'HASH' },
+      { AttributeName: 'type', KeyType: 'HASH' },
+      { AttributeName: 'timestamp', KeyType: 'RANGE' },
     ],
     AttributeDefinitions: [
+      { AttributeName: 'type', AttributeType: 'S' },
       { AttributeName: 'timestamp', AttributeType: 'N' },
     ],
   }).promise().catch((te) => {

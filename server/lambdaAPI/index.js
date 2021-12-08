@@ -286,7 +286,9 @@ exports.handler = (event, context, callback) => {
             return;
           }
 
-          util.addToQueue(b).then(() => {
+          util.log('scan', `Adding series ${b.name}`)
+          .then(() => util.addToQueue(b))
+          .then(() => {
             done(201, 'OK');
           })
           .catch(err => {

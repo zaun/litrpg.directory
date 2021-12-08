@@ -14,7 +14,7 @@ module.exports = exports = async (seriesName, kindleUrl) => {
     return [];
   }
 
-  return util.log(`Fetching Kindle: ${kindleUrl}`)
+  return util.log('scan', `Fetching Kindle: ${kindleUrl}`)
   .then(() => util.fetch(kindleUrl))
   .then(({ html }) => {
     const dom = new JSDOM(html);
@@ -98,7 +98,7 @@ module.exports = exports = async (seriesName, kindleUrl) => {
         let bookNumberParsed = parseFloat(bookNumber);
         if (_.isNaN(bookNumberParsed)) {
           bookNumberParsed = 0;
-          logs.push(util.log(`Kindle - Cant parse book number "${bookNumber}" for "${title}" from ${kindleUrl}`));
+          logs.push(util.log('scan', `Kindle - Cant parse book number "${bookNumber}" for "${title}" from ${kindleUrl}`));
         }
         books.push({
           id: util.cyrb53(`${bookNumberParsed} ${title}`),
@@ -120,10 +120,10 @@ module.exports = exports = async (seriesName, kindleUrl) => {
   })
   .then((books) => {
     if (books.length === 0) {
-      return util.log(`No Kindle books found for ${kindleUrl}`);
+      return util.log('scan', `No Kindle books found for ${kindleUrl}`).then(() => []);
     }
 
-    const waitFor = [];
+    const waitFor = [].then(() => []);
     books.forEach((book) => {
       waitFor.push(util.fetch(book.urls[0].url).then(({ html }) => {
         const dom = new JSDOM(html);
