@@ -7,9 +7,12 @@ NewSeriesDialog(
 p-card.footer
   template(#content)
     .grid.m-0.p-0
-      .col-6.m-0.p-0
+      .col.m-0.p-0.text-left
         p-button.p-button-text.p-button-sm.btn(@click="addSeries") Add Missing Series
-      .col-6.m-0.p-0.text-right
+      .col.m-0.p-0.text-center.quote(:style="{ 'line-height': quote.t2 ? '16px' : '32px' }")
+        div {{ quote.t || quote.t1 }}
+        div {{ quote.t2 || '' }}
+      .col.m-0.p-0.text-right
         p-button.p-button-text.p-button-sm.btn(@click="showResouces") More Resources
         p-overlaypanel(ref="resourceMenu" :dismissable="true")
           p-menu.footer(:model="resources")
@@ -18,6 +21,8 @@ p-card.footer
 <script>
 import {
   inject,
+  onBeforeMount,
+  onBeforeUnmount,
   ref,
 } from 'vue';
 
@@ -77,6 +82,32 @@ export default {
       command: () => openWindow('https://www.goodreads.com/genres/litrpg'),
     }];
 
+    const quote = ref('');
+    const quotes = [{
+      t: 'RPG + Books = LitRPG',
+    }, {
+      t: 'Let\'s enchant some shit!',
+    }, {
+      t: 'Gnomes Rule!',
+    }, {
+      t: 'This is not tasty',
+    }, {
+      t: 'Fecking Pumas',
+    }, {
+      t: 'Fecking Pumas',
+    }, {
+      t: 'Does no one read the sign?!',
+    }, {
+      t1: 'I think we should all go',
+      t2: 'full murderhobo in this place!',
+    }, {
+      t1: 'A man\'s true height only be jugded',
+      t2: 'lying down, yer lordship',
+    }, {
+      t1: 'Well depending on your perspective...',
+      t2: 'this is the easy part.',
+    }];
+
     const addSeries = () => {
       showAddNew.value = true;
     };
@@ -85,12 +116,28 @@ export default {
       resourceMenu.value.toggle(event);
     };
 
+    const updateQuote = () => {
+      const index = Math.floor(Math.random() * quotes.length);
+      quote.value = quotes[index];
+    };
+    updateQuote();
+
+    let quoteTimer = null;
+    onBeforeMount(() => {
+      quoteTimer = setInterval(updateQuote, 1000 * 90);
+    });
+
+    onBeforeUnmount(() => {
+      clearInterval(quoteTimer);
+    });
+
     return {
       resourceMenu,
       resources,
       addSeries,
       showAddNew,
       showResouces,
+      quote,
     };
   },
 };
@@ -120,5 +167,10 @@ export default {
 }
 .footer.p-menu {
   width: 14rem !important;
+}
+.footer .quote {
+  font-size: 0.8rem;
+  flex: 0 0 300px;
+  font-style: italic;
 }
 </style>
