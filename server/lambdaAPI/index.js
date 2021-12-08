@@ -8,6 +8,7 @@ const _ = require('lodash');
 const API_ROUTES = [
   '/AUTH',
   '/BOOKS',
+  '/LOG',
   '/REQUESTS',
   '/REQUESTS/:ID',
   '/SCAN',
@@ -63,7 +64,7 @@ exports.handler = (event, context, callback) => {
   API_ROUTES.forEach((apiRoute) => {
     if (params === false) {
       const matcher = routeMatch(apiRoute);
-      params = matcher(event.path.toUpperCase().replace('/API', ''));
+      params = matcher(event.path.toUpperCase().split('?')[0].replace('/API', ''));
       if (params !== false) {
         resource = apiRoute;
       }
@@ -158,6 +159,23 @@ exports.handler = (event, context, callback) => {
       case '/BOOKS':
         if (route.method === 'GET') {
           read.bookList().then((items) => {
+            done(200, items);
+          }).catch(err => {
+            done(500, err);
+          });
+        } else {
+          done(405, `Method Not Allowed: ${route.method}`);
+        }
+        break;
+
+      case '/LOG':
+        if (route.method === 'GET') {
+          if (!route.auth || !_.includes(route.auth.groups, 'ADMIN')) {
+            done(401, `Not Authorized [${route.auth.groups}]`);
+            return;
+          }
+
+          util.getLogPage(route.query.next).then((items) => {
             done(200, items);
           }).catch(err => {
             done(500, err);
@@ -340,6 +358,7 @@ exports.handler = (event, context, callback) => {
           break;
       
       default:
+        console.log(route);
         done(400, `Bad Request: ${route.resource}`);
     };
   });

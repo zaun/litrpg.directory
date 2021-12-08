@@ -11,7 +11,7 @@ const util = require('./util');
 const _ = require('lodash');
 const { forEach } = require('lodash');
 
-exports.handler = (event, context, callback) => {
+exports.handler = async (event) => {
   let lookup = event;
   if (_.isString(event)) {
     try {
@@ -78,7 +78,7 @@ exports.handler = (event, context, callback) => {
   }
 
   // Lookup book information from the external sites
-  scanAudible(series.name, lookup.audibleUrl)
+  return scanAudible(series.name, lookup.audibleUrl)
   .then(async (audibleBooks) => ({
     audibleBooks,
     kindleBooks: [], // await scanKindle(series.name, lookup.kindleUrl),
@@ -114,7 +114,7 @@ exports.handler = (event, context, callback) => {
           }
         }
 
-        // console.log(newBook.title, masterBook ? masterBook.title : '--', collestionWithNumber.length);
+        // console.log(newBook.bookNumber, newBook.title, masterBook ? masterBook.bookNumber : '--', masterBook ? masterBook.title : '--', collestionWithNumber.length);
 
         // If not by book number, try by title
         if (!masterBook) {
@@ -129,8 +129,9 @@ exports.handler = (event, context, callback) => {
           return;
         }
 
-        // Keep the largest tite
-        if (masterBook.title.length < newBook.title.length) {
+        // Keep the largest tite or unique
+        const foundTitles = _.find(books, { title: newBook.title });
+        if (masterBook.title.length < newBook.title.length && foundTitles.length === 0) {
           masterBook.title = newBook.title;
           masterBook.id = newBook.id;
         }
@@ -228,6 +229,4 @@ exports.handler = (event, context, callback) => {
     return util.log('scan', `Errored ${series.name} - ${ms}ms`)
     .then(() => util.log('scan', `Errored ${series.name} - ${err.message} - ${err.stack}`));
   });
-
-  return {};
 };

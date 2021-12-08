@@ -21,10 +21,31 @@ module.exports = exports = async (seriesName, goodreadsUrl) => {
 
     const elsBooks = document.querySelectorAll('.listWithDividers__item');
     elsBooks.forEach((elBook) => {
-      const bookNumberParts = elBook.querySelector('.gr-h3').textContent.trim().split(' ');
-      const bookNumber = bookNumberParts[bookNumberParts.length - 1];
       const details = elBook.querySelector('.responsiveBook .u-paddingBottomXSmall');
-      const title = util.cleanupName(details.querySelector('.gr-h3').textContent.trim(), seriesName);
+      const titleRaw = details.querySelector('.gr-h3').textContent.trim();
+      const bookNumberRaw = elBook.querySelector('.gr-h3').textContent.trim();
+      let bookNumberParts = null;
+      if (bookNumberRaw.indexOf(',') === -1) {
+        bookNumberParts = bookNumberRaw.split(' ');
+      } else {
+        // This is most likely wandering inn and its all
+        // kinds of messed up on Goodreads.
+        bookNumberParts = bookNumberRaw.split(',')[0].split(' ');
+        if (titleRaw.indexOf('Book 3 - ') !== -1) {
+          bookNumberParts = ['3'];
+        }
+        if (titleRaw.indexOf('Book 4 - ') !== -1) {
+          bookNumberParts = ['4'];
+        }
+        if (titleRaw.indexOf('Book 5 - ') !== -1) {
+          bookNumberParts = ['5'];
+        }
+      }
+      const bookNumber = bookNumberParts[bookNumberParts.length - 1];
+      let title = util.cleanupName(titleRaw, seriesName);
+      if (title === '') {
+        title = titleRaw;
+      }
 
       // get a clean URL
       const elTitleLink = details.querySelector('.gr-h3');

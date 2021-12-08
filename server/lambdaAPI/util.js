@@ -77,6 +77,36 @@ module.exports = exports = {
     .then(result => result ? result.Item : null);
   },
   
+  getLogPage(lasyKey) {
+    let ExclusiveStartKey = null;
+    if (lasyKey) {
+      const buff = Buffer.from(lasyKey, 'base64');
+      ExclusiveStartKey = JSON.parse(buff.toString());
+    }
+
+    return documentClient.query({
+      TableName: 'Log',
+      KeyConditionExpression: '#hfield = :hkey',
+      ExpressionAttributeNames: {
+        '#hfield': 'type',
+      },
+      ExpressionAttributeValues: {
+        ':hkey': 'scan',
+      },
+      Limit: 10,
+      ScanIndexForward: false,
+      ExclusiveStartKey,
+    }).promise()
+    .then((result) => {
+      const key = result.LastEvaluatedKey ? JSON.stringify(result.LastEvaluatedKey) : ''
+      const buff = Buffer.from(key);;
+      return {
+        items: result ? result.Items : [],
+        next: buff.toString('base64'),
+      };
+    });
+  },
+  
   getPersonById(id) {
     return documentClient.get({
       TableName: 'People',
@@ -191,7 +221,9 @@ module.exports = exports = {
     if (process.env.NODE_ENV === 'development') {
       setTimeout(() => {
         const updater = require('../lambdaUpdater');
-        updater.handler(data);
+        updater.handler(data).then(() => {
+          console.log(`Updated done ${data.name}`);
+        });
       }, 250);
       return Promise.resolve();
     }
