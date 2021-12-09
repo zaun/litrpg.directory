@@ -1,6 +1,7 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
 
 import Admin from '@/views/admin/admin.vue';
+import AdminData from '@/views/admin/data.vue';
 import AdminLogin from '@/views/admin/login.vue';
 import AdminSeriesAdd from '@/views/admin/seriesAdd.vue';
 import AdminSeriesReview from '@/views/admin/seriesReview.vue';
@@ -17,6 +18,7 @@ export default (app) => {
     name: 'admin',
     path: '/admin',
     component: Admin,
+    redirect: { path: '/admin/data' },
     beforeEnter: (to, from, next) => {
       const { store } = app.config.globalProperties;
       if (store.state.authenticated) {
@@ -32,6 +34,9 @@ export default (app) => {
     children: [{
       path: 'login',
       component: AdminLogin,
+    }, {
+      path: 'data',
+      component: AdminData,
     }, {
       path: 'series/add',
       component: AdminSeriesAdd,

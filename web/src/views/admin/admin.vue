@@ -2,7 +2,7 @@
 .p-0.m-0(style="height: 100%;")
   p-menubar.admin(v-if="authenticated" :model="menuItems")
     template(#start)
-      i.pi.pi-book
+      .mr-2 Admin Site
   .p-1.admin-view
     router-view
 </template>
@@ -23,6 +23,7 @@ export default {
     const authenticated = computed(() => store.state.authenticated);
     const menuItems = ref([{
       label: 'Series',
+      icon: 'pi pi-book',
       items: [{
         label: 'Add New',
         icon: 'pi pi-plus',
@@ -34,6 +35,7 @@ export default {
       }],
     }, {
       label: 'Scan',
+      icon: 'pi pi-cog',
       items: [{
         label: 'Full Scan',
         icon: 'pi pi-database',
@@ -43,6 +45,10 @@ export default {
         icon: 'pi pi-align-left',
         to: { path: '/admin/scan/log' },
       }],
+    }, {
+      label: 'Data',
+      icon: 'pi pi-chart-bar',
+      to: { path: '/admin/data' },
     }]);
 
     return {
