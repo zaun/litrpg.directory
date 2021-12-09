@@ -75,7 +75,7 @@ exports.handler = (event, context, callback) => {
     resource,
     method: event.httpMethod.toUpperCase(),
     params,
-    query: event.query,
+    query: event.queryStringParameters,
     auth: { },
   };
 
@@ -175,7 +175,7 @@ exports.handler = (event, context, callback) => {
             return;
           }
 
-          util.getLogPage(route.query.next).then((items) => {
+          util.getLogPage(route.query ? route.query.next : '').then((items) => {
             done(200, items);
           }).catch(err => {
             done(500, err);

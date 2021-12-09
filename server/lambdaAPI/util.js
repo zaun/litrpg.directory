@@ -93,7 +93,7 @@ module.exports = exports = {
       ExpressionAttributeValues: {
         ':hkey': 'scan',
       },
-      Limit: 10,
+      Limit: 400,
       ScanIndexForward: false,
       ExclusiveStartKey,
     }).promise()

@@ -41,7 +41,7 @@ app.all('*', (req, res) => {
     path: req.originalUrl,
     headers: req.headers,
     httpMethod: req.method,
-    queryStringParameters: req.params,
+    queryStringParameters: req.query,
     query: req.query,
     body: JSON.stringify(req.body),
   }, {}, (err, data) => {
