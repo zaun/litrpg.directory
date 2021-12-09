@@ -130,7 +130,7 @@ exports.handler = async (event) => {
         }
 
         // Keep the largest tite or unique
-        const foundTitles = _.find(books, { title: newBook.title });
+        const foundTitles = _.filter(books, { title: newBook.title });
         if (masterBook.title.length < newBook.title.length && foundTitles.length === 0) {
           masterBook.title = newBook.title;
           masterBook.id = newBook.id;
