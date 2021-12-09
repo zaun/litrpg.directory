@@ -75,6 +75,15 @@ exports.handler = async () => getAll('Series').then((series) => {
       message: `Scheduled series update started, scheduled ${count}.`,
     },
   }).promise();
+}).catch((err) => {
+  return documentClient.put({
+    TableName: 'Log',
+    Item: {
+      type: 'scan',
+      timestamp: new Date().getTime(),
+      message: `Scheduled series error: ${err.message}`,
+    },
+  }).promise();
 });
 
 // If running this from a dev environmet just call the function
