@@ -16,6 +16,15 @@ const api = (axios, baseApi) => ({
     return axios.get(`${this.baseApi}/requests`, options).then((response) => response.data);
   },
 
+  getLogs(key) {
+    const options = { headers: { Authorization: `Bearer ${this.token}` } };
+    let url = `${this.baseApi}/log`;
+    if (key) {
+      url += `?next=${key}`;
+    }
+    return axios.get(url, options).then((response) => response.data);
+  },
+
   postRequest(seriesId, field, oldValue, newValue) {
     const data = {
       seriesId,

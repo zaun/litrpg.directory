@@ -1,5 +1,5 @@
 <template lang="pug">
-.m-0
+.m-0(style="height: 100%")
   .grid
     .col
     .col(style="flex-basis: 400px")

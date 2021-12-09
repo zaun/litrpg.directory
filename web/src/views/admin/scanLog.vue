@@ -1,23 +1,28 @@
 <template lang="pug">
-.m-2(style="height: calc(100% - 36px - 0.25rem)")
-  .flex-grow-1.p-0.text-left(v-if=`logs.length !== 0` style="height: 100%")
-    p-datatable.p-datatable-sm(
-      :value='requests',
+.m-0(style="height: 100%")
+  .flex-grow-1.p-0.text-left(v-if=`logs.length !== 0` style="height: calc(100% - 36px)")
+    p-datatable.p-datatable-sm.pt-4.pb-1(
+      :value='logs',
       :scrollable="true",
-      scrollDirection="both",
       scrollHeight="100%",
       style="height: 100%;",
-      sortField="title",
-      :sortOrder="1",
+      sortField="timestamp",
+      :sortOrder="0",
     )
       p-column(
-        field='series.name', header="Series Name", :sortable="true",
-        style="flex-grow: 1; flex-basis: 200px;"
+        field='timestamp', header="Timestamp", :sortable="false",
+        style="flex-basis: 200px;"
       )
+        template(#body="props")
+          span
+            | {{ new Date(props.data.timestamp).toLocaleDateString() }}
+            | {{ new Date(props.data.timestamp).toLocaleTimeString() }}
       p-column(
-        field='timestamp', header="Timestamp", :sortable="true",
-        style="flex-basis: 280px;"
+        field='message', header="Message", :sortable="false",
+        style="flex-basis: calc(100% - 280px); overflow-wrap: break-word"
       )
+    p-button(@click="loadMore" :disabled="busy" v-if="hasMore") Load More
+    p-button(@click="refresh" :disabled="busy") Refresh
   .flex-grow-1.p-0.text-left(v-else style="height: 100%")
     .grid
       .col
@@ -26,14 +31,21 @@
           template(#header) Scan Logs
           p.text-left
             | No log entries found.
-          p-button(@click="loadLogs", :disabled="busy") Refresh
+          p-button(@click="loadMore" :disabled="busy") Refresh
       .col
 </template>
 
 <script>
 import {
+  computed,
+  onMounted,
+  inject,
   ref,
 } from 'vue';
+
+import {
+  find,
+} from 'lodash';
 
 import { useToast } from 'primevue/usetoast';
 
@@ -41,22 +53,78 @@ export default {
   name: 'ScanLog',
   components: { },
   setup() {
+    const api = inject('api');
     const toast = useToast();
     const busy = ref(false);
     const logs = ref([]);
+    const nextKey = ref('');
+    const lastKey = ref('');
+    const noMore = ref(false);
 
-    const loadLogs = () => {
-      toast.add({
-        severity: 'info',
-        summary: 'Log view not supported at this time.',
-        life: 5000,
+    const loadLogs = (key, autoload) => {
+      busy.value = true;
+      api.getLogs(key).then((result) => {
+        let foundItem = false;
+        result.items.forEach((i) => {
+          if (!find(logs.value, i)) {
+            logs.value.push(i);
+          } else {
+            foundItem = true;
+          }
+        });
+
+        nextKey.value = result.next;
+        if (!foundItem && nextKey.value !== '' && autoload) {
+          loadLogs(nextKey.value, true);
+        } else if (foundItem && autoload) {
+          lastKey.value = nextKey.value;
+        }
+
+        if (!autoload && nextKey.value === '') {
+          noMore.value = true;
+        }
+        busy.value = false;
+      }).catch(() => {
+        toast.add({
+          severity: 'error',
+          summary: 'Error fetching log enteries.',
+          life: 5000,
+        });
+        nextKey.value = '';
+        lastKey.value = '';
+        noMore.value = false;
+        busy.value = false;
       });
     };
+
+    const loadMore = () => {
+      loadLogs(nextKey.value);
+    };
+
+    const refresh = () => {
+      lastKey.value = nextKey.value;
+      loadLogs('', true);
+    };
+
+    const hasMore = computed(() => {
+      if (noMore.value) {
+        return false;
+      }
+      return nextKey.value !== '';
+    });
+
+    onMounted(() => {
+      loadLogs();
+    });
 
     return {
       busy,
       logs,
       loadLogs,
+      loadMore,
+      refresh,
+      hasMore,
+      noMore,
     };
   },
 };

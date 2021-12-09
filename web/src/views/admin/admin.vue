@@ -3,7 +3,7 @@
   p-menubar.admin(v-if="authenticated" :model="menuItems")
     template(#start)
       i.pi.pi-book
-  .p-1
+  .p-1.admin-view
     router-view
 </template>
 
@@ -56,5 +56,8 @@ export default {
 <style>
 .admin.p-menubar {
   z-index: 50;
+}
+.admin-view {
+  height: calc(100% - 58px);
 }
 </style>
