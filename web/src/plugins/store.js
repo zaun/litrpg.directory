@@ -96,7 +96,7 @@ const store = (api) => ({
       return [];
     }
 
-    const grouped = groupBy(this.state.books, 'series.name');
+    const grouped = groupBy(cloneDeep(this.state.books), 'series.name');
     const series = keys(grouped);
     return sortBy(
       map(series, (s) => {
@@ -178,7 +178,7 @@ const store = (api) => ({
 
   setBooks(books, init) {
     if ((this.state.books.length === 0 && init) || !init) {
-      this.state.books = books;
+      this.state.books = cloneDeep(books);
       if (!init) {
         this.setSeries(this.makeSeriesList());
       }

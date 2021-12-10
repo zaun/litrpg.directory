@@ -1,4 +1,10 @@
 <template lang="pug">
+BookErrorDialog(
+  v-if="showDialog",
+  :title="detailTitle",
+  :items="detailItems",
+  @close="showDialog = false"
+)
 .m-0(style="height: 100%")
   .grid(style="height: 100%; overflow-y: scroll")
     .col
@@ -18,7 +24,7 @@
           p-panel.box.m-1
             template(#header)
               .flex-grow-1.text-center Reviews
-            .text-center.text-4xl.mt-2 {{ reviewCount.toLocaleString() }}
+            .text-center.text-6xl {{ reviewCount.toLocaleString() }}
       .grid.m-0.p-0
         .col.m-0.p-0
           p-panel.box.m-1
@@ -32,7 +38,7 @@
             .text-center.text-6xl {{ narratorCount.toLocaleString() }}
       .grid.m-0.p-0
         .col.m-0.p-0
-          p-panel.box.m-1
+          p-panel.box.link.m-1(@click="showDetails('Books With Issues', badBookLinks)")
             template(#header)
               .flex-grow-1.text-center
                 i.pi.pi-exclamation-triangle.mr-2
@@ -72,14 +78,22 @@ import {
   reduce,
 } from 'lodash';
 
+import BookErrorDialog from '@/components/BookErrorDialog.vue';
+
 export default {
   name: 'Scan',
-  components: { },
+  components: {
+    BookErrorDialog,
+  },
   setup() {
     const store = inject('store');
     const busy = ref(false);
+    const showDialog = ref(false);
+    const detailItems = ref([]);
+    const detailTitle = ref('');
 
     const refresh = () => {
+      console.log('Admin data refresh.');
       busy.value = true;
       store.updateBooks().then(() => {
         busy.value = false;
@@ -187,10 +201,20 @@ export default {
       return current;
     }, []));
 
+    const showDetails = (title, data) => {
+      showDialog.value = true;
+      detailTitle.value = title;
+      detailItems.value = data;
+    };
+
     onMounted(() => refresh());
 
     return {
       busy,
+      showDialog,
+      showDetails,
+      detailItems,
+      detailTitle,
       authorCount,
       badBookLinks,
       badAuthorLinks,
@@ -208,5 +232,9 @@ export default {
 <style>
 .p-panel.box .p-panel-content {
   height: 100px;
+}
+
+.box.link {
+  cursor: pointer;
 }
 </style>

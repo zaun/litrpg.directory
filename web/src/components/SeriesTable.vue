@@ -193,6 +193,7 @@ p-card.noItemsFound(v-if="loading" style="width: 100%; height: 100%;")
 import {
   computed,
   inject,
+  onMounted,
   ref,
   watch,
 } from 'vue';
@@ -233,13 +234,6 @@ export default {
         }
       },
     );
-
-    store.updateBooks().then((err) => {
-      if (err) {
-        error.value = true;
-      }
-      loading.value = false;
-    });
 
     const filteredSeries = () => filter(store.state.series, (s) => {
       let ret = true;
@@ -349,6 +343,16 @@ export default {
       window.open(url, '_blank');
       track('openWindow', { type: 'series', url });
     };
+
+    onMounted(() => {
+      console.log('Series table refresh.');
+      store.updateBooks().then((err) => {
+        if (err) {
+          error.value = true;
+        }
+        loading.value = false;
+      });
+    });
 
     const tipData = computed(() => {
       if (infoTipMode.value === 'setting') {
