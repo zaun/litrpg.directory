@@ -47,7 +47,7 @@
     .col
   .grid
     .col
-    .col
+    .col-10
       p-datatable.p-datatable-sm(
         :value='newSeries',
         :scrollable="true",
@@ -59,6 +59,10 @@
       )
         p-column(
           field='seriesName', header="New Series Name", :sortable="true",
+          style="flex-grow: 0; flex-basis: 290px;"
+        )
+        p-column(
+          field='urls', header="URLs", :sortable="true",
           style="flex-grow: 1; flex-basis: 290px;"
         )
     .col
