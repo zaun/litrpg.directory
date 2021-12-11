@@ -69,7 +69,7 @@ p-datatable.p-datatable-sm.series-table(
   showGridlines,
  )
   p-column(
-    field='title', header="Series Name", :sortable="true", :frozen="true",
+    field='title', header="Series Name", :sortable="true", :frozen="!isMobile",
     style="flex: 1 0 290px;"
   )
     template(#body="props")
@@ -204,6 +204,8 @@ import {
   includes,
 } from 'lodash';
 
+import { useWindowSize } from 'vue-window-size';
+
 import SeriesDialog from '@/components/SeriesDialog.vue';
 
 export default {
@@ -225,6 +227,8 @@ export default {
 
     const loading = ref(true);
     const error = ref(false);
+
+    const windowSize = useWindowSize();
 
     watch(
       () => store.state.series,
@@ -367,6 +371,8 @@ export default {
       return [];
     });
 
+    const isMobile = computed(() => windowSize.width.value < 640);
+
     return {
       VUE_VERSION,
       PRIMEVUE_VERSION,
@@ -386,6 +392,7 @@ export default {
       hideInfoTip,
       tipData,
       goto,
+      isMobile,
       infoOverlay,
       ratingOverlay,
       settingOptions: store.state.settingOptions,
