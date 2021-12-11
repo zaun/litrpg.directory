@@ -204,9 +204,7 @@ exports.handler = (event, context, callback) => {
             util.putRequestSeries({
               timestamp: new Date().getTime(),
               seriesName: b.seriesName,
-              kindleUrl: b.kindleUrl,
-              audibleUrl: b.audibleUrl,
-              goodreadsUrl: b.goodreadsUrl,
+              urls: b.urls,
             }).then(() => {
               done(201, 'OK');
             }).catch(err => {
