@@ -387,6 +387,8 @@ module.exports = exports = {
     switch(cleaned.toLowerCase()) {
       case 'aaaron crash':
         return 'Aaron Crash';
+      case 'a.r. holloway':
+        return 'Aaron Holloway';
       case 'james hunter':
         return 'James A. Hunter';
       case 'jason cheek':
