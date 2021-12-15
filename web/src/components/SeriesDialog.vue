@@ -115,7 +115,7 @@ p-dialog.series-dialog(
   .grid.pt-2(v-if="!editMode")
     p-dataview(:value="selectedSeries.books", layout="grid")
       template(#grid="props")
-        .col-6.p-2
+        .p-2(:class="{ 'col-6': !isMobile, 'col-12': isMobile }")
           p-card
             template(#content)
               .grid.mb-2
@@ -179,6 +179,7 @@ p-dialog.series-dialog(
 
 <script>
 import {
+  computed,
   inject,
   ref,
 } from 'vue';
@@ -189,6 +190,7 @@ import {
 } from 'lodash';
 
 import { useToast } from 'primevue/usetoast';
+import { useWindowSize } from 'vue-window-size';
 
 export default {
   name: 'SeriesDialog',
@@ -201,6 +203,7 @@ export default {
     const track = inject('track');
     const api = inject('api');
     const toast = useToast();
+    const windowSize = useWindowSize();
 
     const ratingOverlay = ref(null);
     const editMode = ref(false);
@@ -346,6 +349,8 @@ export default {
       track('openWindow', { type: 'book', url });
     };
 
+    const isMobile = computed(() => windowSize.width.value < 640);
+
     return {
       ratingOverlay,
       editMode,
@@ -366,6 +371,7 @@ export default {
       plotOptions: store.state.plotOptions,
       eraOptions: store.state.eraOptions,
       ynOptions: store.state.ynOptions,
+      isMobile,
     };
   },
 };
