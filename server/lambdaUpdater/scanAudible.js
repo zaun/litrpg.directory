@@ -25,9 +25,14 @@ module.exports = exports = async (seriesName, audibleUrl) => {
 
     const elsBooks = document.querySelectorAll('.productListItem');
     elsBooks.forEach((elBook) => {
-      const bookNumber = elBook.querySelector('.bc-heading').textContent.trim().split(' ').pop();
+      let bookNumber = elBook.querySelector('.bc-heading').textContent.trim().split(' ').pop();
       const details = elBook.querySelector('.bc-col-7 ul.bc-list');
       const title = util.cleanupName(details.querySelector('.bc-heading').textContent.trim(), seriesName);
+
+      let bookNumberTest = parseFloat(bookNumber);
+      if (_.isNaN(bookNumberTest)) {
+        bookNumber = details.querySelector('.bc-list-item.subtitle').textContent.trim().split(',').pop().split(' ').pop();
+      }
 
       // get a clean URL
       const elTitleLink = details.querySelector('.bc-heading a');
