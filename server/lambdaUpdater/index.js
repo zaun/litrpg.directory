@@ -102,27 +102,45 @@ exports.handler = async (event) => {
     const books = [];
     forEach(collections, (collection) => {
       forEach(collection, (newBook) => {
+        // Don't merge these book from non-audible sources
+        if (
+          (series.name === 'Ascend Online' && newBook.urls[0].url.indexOf('audible') === -1)
+          || (series.name === 'Wandering Inn' && newBook.urls[0].url.indexOf('audible') === -1)
+        ) {
+          return;
+        }
+
         // lookup the book from the final list
         let masterBook = null;
+
+        // Check to verify there aren't multipule books with the
+        // same number in a collection
         const collestionWithNumber = _.filter(collection, { bookNumber: newBook.bookNumber });
         if (collestionWithNumber.length === 1) {
+          // Find the book in the master list if it exists
           const foundBooks = _.filter(books, { bookNumber: newBook.bookNumber });
           if (foundBooks.length === 1) {
             masterBook = foundBooks[0];
-          } else {
+            // console.log('F - ', newBook.bookNumber, newBook.title, masterBook ? masterBook.bookNumber : '--', masterBook ? masterBook.title : '--', collestionWithNumber.length);
+          } else if (foundBooks.length > 1) {
             masterBook = _.find(foundBooks, { title: newBook.title });
+            // console.log('FT - ', newBook.bookNumber, newBook.title, masterBook ? masterBook.bookNumber : '--', masterBook ? masterBook.title : '--', collestionWithNumber.length);
           }
         }
 
-        // console.log(newBook.bookNumber, newBook.title, masterBook ? masterBook.bookNumber : '--', masterBook ? masterBook.title : '--', collestionWithNumber.length);
-
-        // If not by book number, try by title
-        if (!masterBook) {
-          masterBook = _.find(books, { title: newBook.title });
+        // more than one book with the number, try
+        // finding by title
+        else {
+          const foundBooks = _.filter(books, { title: newBook.title });
+          if (foundBooks.length === 1) {
+            masterBook = foundBooks[0];
+            // console.log('T - ', newBook.bookNumber, newBook.title, masterBook ? masterBook.bookNumber : '--', masterBook ? masterBook.title : '--', collestionWithNumber.length);
+          }
         }
 
         // not found in the final list, add it
         if (!masterBook) {
+          // console.log('A - ', newBook.title, newBook.bookNumber);
           newBook.series = series;
           books.push(newBook);
           masterBook = newBook;

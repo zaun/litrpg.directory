@@ -335,6 +335,7 @@ module.exports = exports = {
     .replace(': A Xianxia Fantasy Epic', '')
     .replace(': A LitRPG/GameLit Novel', '')
     .replace(': A LitRPG/Gamelit Novel', '')
+    .replace(' (This Trilogy is Broken', '') // https://www.goodreads.com/book/show/58825502
     .replace(': A Sci-fi LitRPG Story', '')
     .replace(': An Epic LitRPG Series', '')
     .replace(': An Apocalyptic LitRPG', '')
@@ -364,6 +365,9 @@ module.exports = exports = {
     .replace(': Book One', '')
     .replace(': Book Two', '')
     .replace(': A 4x Lit', '')
+    .replace(': Book 1', '')
+    .replace(': Book 2', '')
+    .replace(': Book 3', '')
     .replace('Book 1 -', '')
     .replace('Book 2 -', '')
     .replace('Book 3 -', '')
